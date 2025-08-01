@@ -18,5 +18,8 @@ if [ -z "$DATABASE_URL" ]; then
     export DATABASE_URL="postgresql://dummy:dummy@dummy:5432/dummy"
 fi
 
-# Collect static files (this doesn't need a real database connection)
-python3 manage.py collectstatic --noinput --clear
+# Collect static files
+echo "Collecting static files..."
+python3 manage.py collectstatic --noinput
+
+echo "Build completed successfully!"

@@ -128,12 +128,37 @@ def create_test_data(request):
     except Exception as e:
         return HttpResponse(f"❌ Erreur lors de la création des données de test: {str(e)}")
 
+def check_static_files(request):
+    """Vérifier la configuration des fichiers statiques"""
+    from django.conf import settings
+    import os
+    
+    try:
+        info = f"""
+📁 Configuration des fichiers statiques:
+
+STATIC_URL: {settings.STATIC_URL}
+STATIC_ROOT: {settings.STATIC_ROOT}
+STATICFILES_DIRS: {getattr(settings, 'STATICFILES_DIRS', 'Non défini')}
+
+📂 Vérification des dossiers:
+- STATIC_ROOT existe: {os.path.exists(settings.STATIC_ROOT) if settings.STATIC_ROOT else 'STATIC_ROOT non défini'}
+
+🔧 Middleware WhiteNoise: {'whitenoise.middleware.WhiteNoiseMiddleware' in settings.MIDDLEWARE}
+
+🌐 ALLOWED_HOSTS: {settings.ALLOWED_HOSTS}
+        """
+        return HttpResponse(info)
+    except Exception as e:
+        return HttpResponse(f"❌ Erreur: {str(e)}")
+
 urlpatterns = [
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
     path('migrate/', run_migrations, name='migrate'),
     path('load-fixtures/', load_fixtures, name='load_fixtures'),
     path('create-test-data/', create_test_data, name='create_test_data'),
+    path('check-static/', check_static_files, name='check_static'),
     path('admin/', admin.site.urls),
     path('', include('blog.urls')),
     path('profile/', include('user_profile.urls')),
