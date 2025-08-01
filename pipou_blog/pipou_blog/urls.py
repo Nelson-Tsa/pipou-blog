@@ -62,7 +62,8 @@ def load_fixtures(request):
         sys.stdout = captured_output = io.StringIO()
         
         try:
-            execute_from_command_line(['manage.py', 'loaddata', 'fixtures/all_data.json'])
+            # Essayer de charger les fixtures avec --ignorenonexistent pour éviter les conflits
+            execute_from_command_line(['manage.py', 'loaddata', 'fixtures/all_data.json', '--ignorenonexistent'])
             output = captured_output.getvalue()
             return HttpResponse(f"✅ Fixtures chargées avec succès!\n\n{output}")
         finally:
@@ -70,6 +71,80 @@ def load_fixtures(request):
             
     except Exception as e:
         return HttpResponse(f"❌ Erreur lors du chargement des fixtures: {str(e)}")
+
+def load_fixtures_safe(request):
+    """Charger les fixtures en évitant les conflits de ContentType"""
+    try:
+        import json
+        from django.contrib.contenttypes.models import ContentType
+        from authentication.models import User
+        from blog.models import Post
+        
+        # Lire le fichier de fixtures
+        with open('fixtures/all_data.json', 'r', encoding='utf-8') as f:
+            fixtures_data = json.load(f)
+        
+        results = []
+        
+        for item in fixtures_data:
+            model_name = item['model']
+            
+            # Ignorer les ContentTypes et autres modèles système qui peuvent causer des conflits
+            if model_name in ['contenttypes.contenttype', 'admin.logentry', 'auth.permission']:
+                continue
+                
+            # Traiter les utilisateurs
+            elif model_name == 'authentication.user':
+                fields = item['fields']
+                if not User.objects.filter(username=fields['username']).exists():
+                    user = User.objects.create_user(
+                        username=fields['username'],
+                        email=fields['email'],
+                        first_name=fields.get('first_name', ''),
+                        last_name=fields.get('last_name', ''),
+                    )
+                    if fields.get('is_staff'):
+                        user.is_staff = True
+                    if fields.get('is_superuser'):
+                        user.is_superuser = True
+                    user.save()
+                    results.append(f"✅ Utilisateur créé: {fields['username']}")
+                else:
+                    results.append(f"⚠️ Utilisateur existe déjà: {fields['username']}")
+            
+            # Traiter les posts
+            elif model_name == 'blog.post':
+                fields = item['fields']
+                if not Post.objects.filter(title=fields['title']).exists():
+                    # Trouver l'utilisateur correspondant
+                    try:
+                        user = User.objects.get(pk=fields['user'])
+                        Post.objects.create(
+                            title=fields['title'],
+                            content=fields['content'],
+                            user=user,
+                            created_at=fields.get('created_at'),
+                            updated_at=fields.get('updated_at')
+                        )
+                        results.append(f"✅ Article créé: {fields['title']}")
+                    except User.DoesNotExist:
+                        results.append(f"❌ Utilisateur introuvable pour l'article: {fields['title']}")
+                else:
+                    results.append(f"⚠️ Article existe déjà: {fields['title']}")
+        
+        return HttpResponse(f"""
+🎯 Chargement sécurisé des fixtures terminé!
+
+📊 Résultats:
+{chr(10).join(results)}
+
+🔗 Liens utiles:
+- Page d'accueil: /
+- Administration: /admin/
+        """)
+        
+    except Exception as e:
+        return HttpResponse(f"❌ Erreur lors du chargement sécurisé: {str(e)}")
 
 def create_test_data(request):
     """Créer des données de test directement"""
@@ -184,6 +259,7 @@ urlpatterns = [
     path('test-template/', test_template, name='test_template'),
     path('migrate/', run_migrations, name='migrate'),
     path('load-fixtures/', load_fixtures, name='load_fixtures'),
+    path('load-fixtures-safe/', load_fixtures_safe, name='load_fixtures_safe'),
     path('create-test-data/', create_test_data, name='create_test_data'),
     path('check-static/', check_static_files, name='check_static'),
     path('test-admin/', test_admin_access, name='test_admin'),
