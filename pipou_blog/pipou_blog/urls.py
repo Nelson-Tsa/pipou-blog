@@ -338,10 +338,157 @@ def simple_admin_test(request):
 
 🔗 Actions disponibles:
 - <a href="/create-admin/">Créer/Configurer admin</a>
-- <a href="/admin/">Essayer l'admin Django</a>
+- <a href="/list-users/">Voir tous les utilisateurs</a>
+- <a href="/list-posts/">Voir tous les articles</a>
+- <a href="/admin-login/">Connexion admin personnalisée</a>
 
 💡 Si l'admin Django ne fonctionne pas, utilisez cette interface pour gérer vos données.
         """)
+        
+    except Exception as e:
+        return HttpResponse(f"❌ Erreur: {str(e)}")
+
+def list_users(request):
+    """Lister tous les utilisateurs avec détails"""
+    try:
+        from authentication.models import User
+        
+        users = User.objects.all().order_by('-date_joined')
+        
+        users_html = ""
+        for user in users:
+            users_html += f"""
+            <tr>
+                <td>{user.id}</td>
+                <td>{user.username}</td>
+                <td>{user.email}</td>
+                <td>{user.first_name} {user.last_name}</td>
+                <td>{'✅' if user.is_staff else '❌'}</td>
+                <td>{'✅' if user.is_superuser else '❌'}</td>
+                <td>{'✅' if user.is_active else '❌'}</td>
+                <td>{user.date_joined.strftime('%d/%m/%Y %H:%M')}</td>
+            </tr>
+            """
+        
+        html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Gestion des utilisateurs - PipouBlog</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
+                th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+                th {{ background-color: #007cba; color: white; }}
+                tr:nth-child(even) {{ background-color: #f2f2f2; }}
+                .header {{ background: #007cba; color: white; padding: 20px; margin: -20px -20px 20px -20px; }}
+                .btn {{ display: inline-block; background: #007cba; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; margin: 5px 5px 5px 0; }}
+                .btn:hover {{ background: #005a87; }}
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>� Gestion des utilisateurs</h1>
+                <p>Total: {users.count()} utilisateurs</p>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <a href="/admin-dashboard/" class="btn">← Retour au dashboard</a>
+                <a href="/create-admin/" class="btn">Créer un admin</a>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Nom d'utilisateur</th>
+                        <th>Email</th>
+                        <th>Nom complet</th>
+                        <th>Staff</th>
+                        <th>Superuser</th>
+                        <th>Actif</th>
+                        <th>Date d'inscription</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {users_html}
+                </tbody>
+            </table>
+        </body>
+        </html>
+        """
+        
+        return HttpResponse(html)
+        
+    except Exception as e:
+        return HttpResponse(f"❌ Erreur: {str(e)}")
+
+def list_posts(request):
+    """Lister tous les articles avec détails"""
+    try:
+        from blog.models import Post
+        
+        posts = Post.objects.all().order_by('-created_at')
+        
+        posts_html = ""
+        for post in posts:
+            posts_html += f"""
+            <tr>
+                <td>{post.id}</td>
+                <td><strong>{post.title[:50]}{'...' if len(post.title) > 50 else ''}</strong></td>
+                <td>{post.user.username}</td>
+                <td>{post.content[:100]}{'...' if len(post.content) > 100 else ''}</td>
+                <td>{post.likes}</td>
+                <td>{post.created_at.strftime('%d/%m/%Y %H:%M')}</td>
+            </tr>
+            """
+        
+        html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Gestion des articles - PipouBlog</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
+                th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+                th {{ background-color: #007cba; color: white; }}
+                tr:nth-child(even) {{ background-color: #f2f2f2; }}
+                .header {{ background: #007cba; color: white; padding: 20px; margin: -20px -20px 20px -20px; }}
+                .btn {{ display: inline-block; background: #007cba; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; margin: 5px 5px 5px 0; }}
+                .btn:hover {{ background: #005a87; }}
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>📝 Gestion des articles</h1>
+                <p>Total: {posts.count()} articles</p>
+            </div>
+            
+            <div style="margin-bottom: 20px;">
+                <a href="/admin-dashboard/" class="btn">← Retour au dashboard</a>
+            </div>
+            
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Titre</th>
+                        <th>Auteur</th>
+                        <th>Contenu (extrait)</th>
+                        <th>Likes</th>
+                        <th>Date de création</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {posts_html}
+                </tbody>
+            </table>
+        </body>
+        </html>
+        """
+        
+        return HttpResponse(html)
         
     except Exception as e:
         return HttpResponse(f"❌ Erreur: {str(e)}")
