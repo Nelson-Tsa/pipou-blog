@@ -1244,6 +1244,87 @@ def test_login_manual(request):
     """
     return HttpResponse(html)
 
+def test_auth_backends(request):
+    """Tester les backends d'authentification"""
+    try:
+        from django.contrib.auth import get_user_model
+        from django.conf import settings
+        
+        html = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Test Backends Auth</title>
+            <style>
+                body { font-family: Arial, sans-serif; margin: 40px; }
+                .success { color: green; }
+                .error { color: red; }
+                .info { color: blue; }
+            </style>
+        </head>
+        <body>
+            <h1>🔧 Test des Backends d'Authentification</h1>
+        """
+        
+        # Test 1: Vérifier les settings
+        html += "<h3>1. Configuration des Settings:</h3>"
+        try:
+            auth_backends = getattr(settings, 'AUTHENTICATION_BACKENDS', None)
+            if auth_backends:
+                html += f'<p class="success">✅ AUTHENTICATION_BACKENDS configuré: {auth_backends}</p>'
+            else:
+                html += '<p class="error">❌ AUTHENTICATION_BACKENDS non configuré</p>'
+        except Exception as e:
+            html += f'<p class="error">❌ Erreur settings: {str(e)}</p>'
+        
+        # Test 2: Vérifier le modèle utilisateur
+        html += "<h3>2. Modèle Utilisateur:</h3>"
+        try:
+            User = get_user_model()
+            html += f'<p class="success">✅ Modèle utilisateur: {User}</p>'
+            users_count = User.objects.count()
+            html += f'<p class="info">📊 Nombre d\'utilisateurs: {users_count}</p>'
+        except Exception as e:
+            html += f'<p class="error">❌ Erreur modèle utilisateur: {str(e)}</p>'
+        
+        # Test 3: Tester l'import du backend
+        html += "<h3>3. Import du Backend:</h3>"
+        try:
+            from authentication.backends import EmailBackend
+            backend = EmailBackend()
+            html += '<p class="success">✅ Backend EmailBackend importé avec succès</p>'
+        except Exception as e:
+            html += f'<p class="error">❌ Erreur import backend: {str(e)}</p>'
+        
+        # Test 4: Test simple d'authentification
+        html += "<h3>4. Test d'Authentification Simple:</h3>"
+        try:
+            from django.contrib.auth import authenticate
+            # Test avec des identifiants bidon pour voir si ça plante
+            user = authenticate(request, email="test@test.com", password="test")
+            if user is None:
+                html += '<p class="success">✅ Fonction authenticate() fonctionne (retourne None pour utilisateur inexistant)</p>'
+            else:
+                html += f'<p class="info">ℹ️ Utilisateur trouvé: {user}</p>'
+        except Exception as e:
+            html += f'<p class="error">❌ Erreur authenticate(): {str(e)}</p>'
+        
+        html += """
+            <h3>5. Actions:</h3>
+            <p>
+                <a href="/show-emails/" style="background: #007cba; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Voir les Utilisateurs</a>
+                <a href="/test-login-manual/" style="background: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; margin-left: 10px;">Test de Connexion</a>
+            </p>
+            <p><a href="/">← Retour au site</a></p>
+        </body>
+        </html>
+        """
+        
+        return HttpResponse(html)
+        
+    except Exception as e:
+        return HttpResponse(f"❌ Erreur globale: {str(e)}")
+
 urlpatterns = [
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
@@ -1262,6 +1343,7 @@ urlpatterns = [
     path('debug-login/', debug_login, name='debug_login'),
     path('test-login-manual/', test_login_manual, name='test_login_manual'),
     path('show-emails/', show_user_emails, name='show_emails'),
+    path('test-auth-backends/', test_auth_backends, name='test_auth_backends'),
     path('admin-login/', admin_custom_login, name='admin_custom_login'),
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
     path('admin-alt/', admin_alternative, name='admin_alt'),
