@@ -16,11 +16,38 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from django.http import JsonResponse
+import os
 
 from django.conf import settings
 from django.conf.urls.static import static
-from debug_view import debug_info
 
+def debug_info(request):
+    """Vue de debug pour diagnostiquer les problèmes de configuration"""
+    
+    debug_data = {
+        'status': 'Django is running!',
+        'python_version': os.sys.version,
+        'debug_mode': settings.DEBUG,
+        'allowed_hosts': settings.ALLOWED_HOSTS,
+        'environment_variables': {
+            'DATABASE_URL': 'SET' if os.getenv('DATABASE_URL') else 'NOT SET',
+            'SECRET_KEY': 'SET' if os.getenv('SECRET_KEY') else 'NOT SET',
+            'DEBUG': os.getenv('DEBUG', 'NOT SET'),
+        },
+        'database_config': {
+            'engine': settings.DATABASES['default']['ENGINE'],
+            'name': settings.DATABASES['default']['NAME'],
+            'host': settings.DATABASES['default']['HOST'],
+            'port': settings.DATABASES['default']['PORT'],
+        },
+        'static_settings': {
+            'static_url': settings.STATIC_URL,
+            'static_root': getattr(settings, 'STATIC_ROOT', 'Not set'),
+        }
+    }
+    
+    return JsonResponse(debug_data, indent=2)
 
 urlpatterns = [
     path('admin/', admin.site.urls),
