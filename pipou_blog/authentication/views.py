@@ -13,6 +13,9 @@ class CustomLoginView(LoginView):
     authentication_form = EmailAuthenticationForm
 
     def form_invalid(self, form):
+        print("Form is invalid (from views.py)")
+        print("Form errors:", form.errors)
+        print("Request POST data:", self.request.POST)
         for field, errors in form.errors.items():
             for error in errors:
                 if field == '__all__':

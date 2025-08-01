@@ -11,13 +11,25 @@
                 {% endfor %}
             </ul>
         {% endif %}
-        {% if form.non_field_errors %}
-            <div class="error non-field-errors">
-            {% for error in form.non_field_errors %}
-            <p>{{ error }}</p>
-            {% endfor %}
+        
+        {# Fallback for direct form errors #}
+        {% if form.errors %}
+            <div class="error-direct">
+                <h3>Erreurs du formulaire:</h3>
+                <ul>
+                {% for field, errors in form.errors.items %}
+                    <li><strong>{{ field }}:</strong>
+                        <ul>
+                        {% for error in errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                        </ul>
+                    </li>
+                {% endfor %}
+                </ul>
             </div>
         {% endif %}
+
         <form method="POST" class="connexion-form">
             {% csrf_token %}
             <div class="connexion_input">
