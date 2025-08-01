@@ -16,12 +16,9 @@ class EmailAuthenticationForm(forms.Form):
         email = self.cleaned_data.get('email')
         password = self.cleaned_data.get('password')
         if email and password:
-            try:
-                self.user = authenticate(self.request, email=email, password=password)
-                if self.user is None:
-                    raise forms.ValidationError("Identifiants invalides.")
-            except Exception as e:
-                raise forms.ValidationError(f"Une erreur est survenue lors de la connexion: {e}")
+            self.user = authenticate(self.request, email=email, password=password)
+            if self.user is None:
+                raise forms.ValidationError("Identifiants invalides.")
         return self.cleaned_data
 
     def get_user(self):
