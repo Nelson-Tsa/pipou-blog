@@ -14,3 +14,7 @@ from django.core.wsgi import get_wsgi_application
 os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'pipou_blog.pipou_blog.settings')
 
 application = get_wsgi_application()
+
+# Alias pour Vercel
+handler = application
+app = application
