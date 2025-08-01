@@ -131,7 +131,6 @@ def load_fixtures_safe(request):
                             'content': fields['content'],
                             'user': user,
                             'created_at': fields.get('created_at'),
-                            'updated_at': fields.get('updated_at')
                         }
                     )
                     
