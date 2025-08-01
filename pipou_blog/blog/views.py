@@ -10,7 +10,7 @@ from django.contrib.auth.decorators import login_required
 class BlogHome(ListView):
     model = Post
     context_object_name = "posts"
-    template_name = "index.html"
+    template_name = "index_simple.html"  # Template simplifié pour test Vercel
 
 class BlogPostDetail(DetailView):
     model = Post

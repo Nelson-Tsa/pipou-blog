@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PipouBlog - Test Vercel</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .post_container { border: 1px solid #ccc; padding: 15px; margin: 10px 0; }
+        .post_header h2 { color: #333; }
+        .link { color: #007bff; text-decoration: none; }
+        .like-btn { background: none; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>🐧 PipouBlog - Version Test Vercel</h1>
+        {% if user.is_authenticated %}
+            <p>Connecté en tant que : {{ user.username }}</p>
+        {% else %}
+            <p><a href="/login/">Se connecter</a></p>
+        {% endif %}
+    </header>
+    
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+    
+    <footer>
+        <p>PipouBlog déployé sur Vercel ✅</p>
+    </footer>
+</body>
+</html>

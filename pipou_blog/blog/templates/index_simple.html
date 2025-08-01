@@ -1,0 +1,33 @@
+{% extends "base_simple.html" %}
+
+{% block content %}
+<section class="post_view-container">
+    <h2>📝 Articles du Blog</h2>
+    
+    {% if posts %}
+        {% for post in posts %}
+        <article class="post_container">
+            <div class="post_header">
+                <h2>{{ post.title }}</h2>
+                <p>Publié le {{ post.created_at|date:"j F Y" }}</p>
+            </div>
+            <p>{{ post.content|safe|truncatewords:20 }}</p>
+            <p>Par : <a class="link" href="/profile/{{ post.user.id }}">{{ post.user.username }}</a></p>
+            
+            <!-- Section des likes -->
+            <div class="post_actions">
+                {% if user.is_authenticated %}
+                    <button class="like-btn" data-post-id="{{ post.id }}">
+                        ❤️ {{ post.get_likes_count }}
+                    </button>
+                {% else %}
+                    <span>❤️ {{ post.get_likes_count }}</span>
+                {% endif %}
+            </div>
+        </article>
+        {% endfor %}
+    {% else %}
+        <p>Aucun article pour le moment. <a href="/admin/">Créer un article</a></p>
+    {% endif %}
+</section>
+{% endblock %}
