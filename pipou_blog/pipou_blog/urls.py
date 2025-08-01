@@ -1429,7 +1429,10 @@ def test_direct_login(request):
             try {
                 const response = await fetch('/test-direct-login/', {
                     method: 'POST',
-                    body: formData
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                    }
                 });
                 
                 const data = await response.json();
