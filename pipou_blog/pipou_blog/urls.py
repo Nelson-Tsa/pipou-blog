@@ -268,6 +268,52 @@ def test_admin_access(request):
     except Exception as e:
         return HttpResponse(f"❌ Erreur admin: {str(e)}")
 
+def create_admin_user(request):
+    """Créer un superuser spécifiquement pour l'admin"""
+    try:
+        from authentication.models import User
+        
+        # Créer ou récupérer le superuser admin
+        admin_user, created = User.objects.get_or_create(
+            username='admin',
+            defaults={
+                'email': 'admin@pipou.blog',
+                'is_staff': True,
+                'is_superuser': True,
+                'first_name': 'Admin',
+                'last_name': 'PipouBlog'
+            }
+        )
+        
+        # S'assurer qu'il a les bonnes permissions
+        admin_user.is_staff = True
+        admin_user.is_superuser = True
+        admin_user.set_password('admin123')
+        admin_user.save()
+        
+        # Lister tous les superusers
+        superusers = User.objects.filter(is_superuser=True)
+        
+        return HttpResponse(f"""
+✅ Superuser admin configuré!
+
+👤 Utilisateur: admin
+🔑 Mot de passe: admin123
+📧 Email: {admin_user.email}
+
+📊 Tous les superusers:
+{chr(10).join([f"- {u.username} ({u.email}) - Staff: {u.is_staff}, Super: {u.is_superuser}" for u in superusers])}
+
+🔗 Essayez maintenant:
+- Administration: /admin/
+- Connexion: admin / admin123
+
+⚠️ Si l'admin ne fonctionne toujours pas, le problème est probablement dans les templates Django admin.
+        """)
+        
+    except Exception as e:
+        return HttpResponse(f"❌ Erreur lors de la création du superuser: {str(e)}")
+
 urlpatterns = [
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
@@ -275,6 +321,7 @@ urlpatterns = [
     path('load-fixtures/', load_fixtures, name='load_fixtures'),
     path('load-fixtures-safe/', load_fixtures_safe, name='load_fixtures_safe'),
     path('create-test-data/', create_test_data, name='create_test_data'),
+    path('create-admin/', create_admin_user, name='create_admin'),
     path('check-static/', check_static_files, name='check_static'),
     path('test-admin/', test_admin_access, name='test_admin'),
     path('admin/', admin.site.urls),
