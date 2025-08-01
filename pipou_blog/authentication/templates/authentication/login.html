@@ -4,6 +4,17 @@
 
     <section class="connexion-container">
         <h1>Se connecter</h1>
+        
+        <!-- Affichage des messages d'erreur et de succès -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
+        
+        <!-- Affichage des erreurs de formulaire -->
         {% if form.non_field_errors %}
             <div class="error non-field-errors">
             {% for error in form.non_field_errors %}
@@ -11,25 +22,24 @@
             {% endfor %}
             </div>
         {% endif %}
+        
         <form method="POST" class="connexion-form">
             {% csrf_token %}
             <div class="connexion_input">
-                {{ form.email.label}} {{ form.email }}
-                {% if form.email.errors %}
-                <div class="error">{{ form.email.errors }}</div>
-                {% endif %}
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" required>
             </div>
             <div class="connexion_input">
-                {{ form.password.label }} {{ form.password }}
-                {% if form.password.errors %}
-                <div class="error">{{ form.password.errors }}</div>
-                {% endif %}
+                <label for="password">Mot de passe:</label>
+                <input type="password" id="password" name="password" required>
             </div>
             <input type="submit" value="Se Connecter" class="submit_btn" />
         </form>
 
         <p>Pas encore de compte ? <a class="link" href="{% url 'register' %}">S'inscrire</a></p>
+        
+        <!-- Lien de test pour déboguer -->
+        <p><a href="/test-simple-db/" style="color: #666; font-size: 0.9em;">🔧 Test de connexion</a></p>
     </section>
-
 
 {% endblock %}
