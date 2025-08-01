@@ -9,6 +9,24 @@ import os
 from django.conf import settings
 from django.conf.urls.static import static
 
+def test_db_connection(request):
+    """A simple view to test the database connection."""
+    from django.http import HttpResponse
+    from authentication.models import User
+    import os
+    
+    db_url = os.getenv("DATABASE_URL")
+    db_info = f"DATABASE_URL is set: {bool(db_url)}\n"
+    if db_url:
+        db_info += f"DATABASE_URL value (first 15 chars): {db_url[:15]}..."
+
+    try:
+        user_count = User.objects.count()
+        return HttpResponse(f"<h1>✅ DB Connection OK</h1><p>User count: {user_count}</p><pre>{db_info}</pre>")
+    except Exception as e:
+        return HttpResponse(f"<h1>❌ DB Connection FAILED</h1><p>Error: {str(e)}</p><pre>{db_info}</pre>")
+
+
 def simple_test(request):
     """Vue de test ultra-simple"""
     try:
@@ -1641,6 +1659,7 @@ def test_manual_auth(request):
     return HttpResponse(html)
 
 urlpatterns = [
+    path('test-db/', test_db_connection, name='test_db'),
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
     path('migrate/', run_migrations, name='migrate'),
