@@ -1325,6 +1325,130 @@ def test_auth_backends(request):
     except Exception as e:
         return HttpResponse(f"❌ Erreur globale: {str(e)}")
 
+def test_direct_login(request):
+    """Test de connexion directe avec admin@pipou.blog"""
+    from django.contrib.auth import authenticate, login, get_user_model
+    from django.http import JsonResponse
+    
+    if request.method == 'POST':
+        try:
+            # Test avec admin@pipou.blog et différents mots de passe courants
+            email = "admin@pipou.blog"
+            password = request.POST.get('password', '')
+            
+            User = get_user_model()
+            
+            # Vérifier si l'utilisateur existe
+            try:
+                user_obj = User.objects.get(email=email)
+                user_info = f"Utilisateur trouvé: {user_obj.username} - Actif: {user_obj.is_active}"
+            except User.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'error': f"Utilisateur {email} n'existe pas",
+                    'all_emails': list(User.objects.values_list('email', flat=True))
+                })
+            
+            # Test d'authentification
+            user = authenticate(request, email=email, password=password)
+            
+            if user:
+                login(request, user)
+                return JsonResponse({
+                    'success': True,
+                    'message': f"Connexion réussie ! Bienvenue {user.username}",
+                    'redirect_url': '/'
+                })
+            else:
+                # Test manuel du mot de passe
+                password_valid = user_obj.check_password(password)
+                return JsonResponse({
+                    'success': False,
+                    'error': "Mot de passe incorrect",
+                    'user_info': user_info,
+                    'password_check': password_valid,
+                    'suggestions': [
+                        "admin123",
+                        "password",
+                        "admin",
+                        "123456"
+                    ]
+                })
+                
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': f"Erreur: {str(e)}",
+                'error_type': type(e).__name__
+            })
+    
+    # Formulaire simple
+    html = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Test Connexion Direct</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; max-width: 500px; }
+            input { padding: 10px; width: 100%; margin: 10px 0; }
+            button { padding: 10px 20px; background: #007cba; color: white; border: none; cursor: pointer; }
+            .result { margin-top: 20px; padding: 15px; border-radius: 5px; }
+            .success { background: #d4edda; color: #155724; }
+            .error { background: #f8d7da; color: #721c24; }
+        </style>
+    </head>
+    <body>
+        <h1>🔐 Test Connexion Direct</h1>
+        <p><strong>Email fixe:</strong> admin@pipou.blog</p>
+        
+        <form id="loginForm">
+            <label>Mot de passe:</label>
+            <input type="password" name="password" placeholder="Essayez: admin123, password, admin..." required>
+            <button type="submit">Tester</button>
+        </form>
+        
+        <div id="result"></div>
+        
+        <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch('/test-direct-login/', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const data = await response.json();
+                const resultDiv = document.getElementById('result');
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = '<h3>✅ ' + data.message + '</h3>';
+                    setTimeout(() => window.location.href = data.redirect_url, 2000);
+                } else {
+                    resultDiv.className = 'result error';
+                    let html = '<h3>❌ ' + data.error + '</h3>';
+                    if (data.user_info) html += '<p>' + data.user_info + '</p>';
+                    if (data.suggestions) {
+                        html += '<p><strong>Mots de passe à essayer:</strong> ' + data.suggestions.join(', ') + '</p>';
+                    }
+                    if (data.all_emails) {
+                        html += '<p><strong>Emails disponibles:</strong> ' + data.all_emails.join(', ') + '</p>';
+                    }
+                    resultDiv.innerHTML = html;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<div class="result error">Erreur réseau: ' + error.message + '</div>';
+            }
+        });
+        </script>
+    </body>
+    </html>
+    """
+    return HttpResponse(html)
+
 urlpatterns = [
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
@@ -1344,6 +1468,7 @@ urlpatterns = [
     path('test-login-manual/', test_login_manual, name='test_login_manual'),
     path('show-emails/', show_user_emails, name='show_emails'),
     path('test-auth-backends/', test_auth_backends, name='test_auth_backends'),
+    path('test-direct-login/', test_direct_login, name='test_direct_login'),
     path('admin-login/', admin_custom_login, name='admin_custom_login'),
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
     path('admin-alt/', admin_alternative, name='admin_alt'),
