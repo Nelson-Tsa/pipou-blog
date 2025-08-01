@@ -2,9 +2,8 @@
   "version": 2,
   "builds": [
     {
-      "src": "pipou_blog/pipou_blog/wsgi.py",
-      "use": "@vercel/python",
-      "config": { "maxLambdaSize": "15mb", "runtime": "python3.12" }
+      "src": "index.py",
+      "use": "@vercel/python"
     },
     {
       "src": "build_files.sh",
@@ -25,7 +24,7 @@
     },
     {
       "src": "/(.*)",
-      "dest": "pipou_blog/pipou_blog/wsgi.py"
+      "dest": "/index.py"
     }
   ]
 }
