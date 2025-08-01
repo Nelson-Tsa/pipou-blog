@@ -74,7 +74,7 @@ def load_fixtures(request):
 def create_test_data(request):
     """Créer des données de test directement"""
     try:
-        from django.contrib.auth.models import User
+        from authentication.models import User  # Utiliser le modèle User personnalisé
         from blog.models import Post
         
         # Créer un superuser si il n'existe pas
