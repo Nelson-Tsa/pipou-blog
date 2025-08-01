@@ -766,6 +766,7 @@ def test_login_status(request):
                 .status {{ background: #f8f9fa; border: 1px solid #dee2e6; padding: 20px; border-radius: 4px; margin: 20px 0; }}
                 .btn {{ display: inline-block; background: #007cba; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; margin: 5px; }}
                 .btn:hover {{ background: #005a87; }}
+                .warning {{ background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 4px; margin: 20px 0; }}
             </style>
         </head>
         <body>
@@ -919,44 +920,55 @@ def test_login_manual(request):
     from django.http import JsonResponse
     
     if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        
-        # Test 1: Vérifier si l'utilisateur existe
-        User = get_user_model()
         try:
-            user_exists = User.objects.get(email=email)
-            user_info = f"✅ Utilisateur trouvé: {user_exists.username} ({user_exists.email})"
-        except User.DoesNotExist:
+            email = request.POST.get('email')
+            password = request.POST.get('password')
+            
+            # Test 1: Vérifier si l'utilisateur existe
+            User = get_user_model()
+            try:
+                user_exists = User.objects.get(email=email)
+                user_info = f"✅ Utilisateur trouvé: {user_exists.username} ({user_exists.email})"
+            except User.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'error': f"❌ Aucun utilisateur trouvé avec l'email: {email}",
+                    'users_list': list(User.objects.all().values_list('email', 'username'))
+                })
+            
+            # Test 2: Tester l'authentification
+            user = authenticate(request, email=email, password=password)
+            if user:
+                login(request, user)
+                return JsonResponse({
+                    'success': True,
+                    'message': f"✅ Connexion réussie pour {user.username}",
+                    'user_info': user_info,
+                    'redirect_url': '/'
+                })
+            else:
+                # Test 3: Vérifier le mot de passe manuellement
+                password_check = user_exists.check_password(password)
+                return JsonResponse({
+                    'success': False,
+                    'error': f"❌ Échec de l'authentification",
+                    'user_info': user_info,
+                    'password_valid': password_check,
+                    'debug_info': {
+                        'email_provided': email,
+                        'password_provided': bool(password),
+                        'user_active': user_exists.is_active,
+                        'backends': settings.AUTHENTICATION_BACKENDS if hasattr(settings, 'AUTHENTICATION_BACKENDS') else 'Non configuré'
+                    }
+                })
+        except Exception as e:
+            # Gestion d'erreur globale pour éviter les erreurs JavaScript
             return JsonResponse({
                 'success': False,
-                'error': f"❌ Aucun utilisateur trouvé avec l'email: {email}",
-                'users_list': list(User.objects.all().values_list('email', 'username'))
-            })
-        
-        # Test 2: Tester l'authentification
-        user = authenticate(request, email=email, password=password)
-        if user:
-            login(request, user)
-            return JsonResponse({
-                'success': True,
-                'message': f"✅ Connexion réussie pour {user.username}",
-                'user_info': user_info,
-                'redirect_url': '/'
-            })
-        else:
-            # Test 3: Vérifier le mot de passe manuellement
-            password_check = user_exists.check_password(password)
-            return JsonResponse({
-                'success': False,
-                'error': f"❌ Échec de l'authentification",
-                'user_info': user_info,
-                'password_valid': password_check,
+                'error': f"❌ Erreur système: {str(e)}",
                 'debug_info': {
-                    'email_provided': email,
-                    'password_provided': bool(password),
-                    'user_active': user_exists.is_active,
-                    'backends': settings.AUTHENTICATION_BACKENDS if hasattr(settings, 'AUTHENTICATION_BACKENDS') else 'Non configuré'
+                    'error_type': type(e).__name__,
+                    'error_message': str(e)
                 }
             })
     
@@ -1105,44 +1117,55 @@ def test_login_manual(request):
     from django.http import JsonResponse
     
     if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
-        
-        # Test 1: Vérifier si l'utilisateur existe
-        User = get_user_model()
         try:
-            user_exists = User.objects.get(email=email)
-            user_info = f"✅ Utilisateur trouvé: {user_exists.username} ({user_exists.email})"
-        except User.DoesNotExist:
+            email = request.POST.get('email')
+            password = request.POST.get('password')
+            
+            # Test 1: Vérifier si l'utilisateur existe
+            User = get_user_model()
+            try:
+                user_exists = User.objects.get(email=email)
+                user_info = f"✅ Utilisateur trouvé: {user_exists.username} ({user_exists.email})"
+            except User.DoesNotExist:
+                return JsonResponse({
+                    'success': False,
+                    'error': f"❌ Aucun utilisateur trouvé avec l'email: {email}",
+                    'users_list': list(User.objects.all().values_list('email', 'username'))
+                })
+            
+            # Test 2: Tester l'authentification
+            user = authenticate(request, email=email, password=password)
+            if user:
+                login(request, user)
+                return JsonResponse({
+                    'success': True,
+                    'message': f"✅ Connexion réussie pour {user.username}",
+                    'user_info': user_info,
+                    'redirect_url': '/'
+                })
+            else:
+                # Test 3: Vérifier le mot de passe manuellement
+                password_check = user_exists.check_password(password)
+                return JsonResponse({
+                    'success': False,
+                    'error': f"❌ Échec de l'authentification",
+                    'user_info': user_info,
+                    'password_valid': password_check,
+                    'debug_info': {
+                        'email_provided': email,
+                        'password_provided': bool(password),
+                        'user_active': user_exists.is_active,
+                        'backends': settings.AUTHENTICATION_BACKENDS if hasattr(settings, 'AUTHENTICATION_BACKENDS') else 'Non configuré'
+                    }
+                })
+        except Exception as e:
+            # Gestion d'erreur globale pour éviter les erreurs JavaScript
             return JsonResponse({
                 'success': False,
-                'error': f"❌ Aucun utilisateur trouvé avec l'email: {email}",
-                'users_list': list(User.objects.all().values_list('email', 'username'))
-            })
-        
-        # Test 2: Tester l'authentification
-        user = authenticate(request, email=email, password=password)
-        if user:
-            login(request, user)
-            return JsonResponse({
-                'success': True,
-                'message': f"✅ Connexion réussie pour {user.username}",
-                'user_info': user_info,
-                'redirect_url': '/'
-            })
-        else:
-            # Test 3: Vérifier le mot de passe manuellement
-            password_check = user_exists.check_password(password)
-            return JsonResponse({
-                'success': False,
-                'error': f"❌ Échec de l'authentification",
-                'user_info': user_info,
-                'password_valid': password_check,
+                'error': f"❌ Erreur système: {str(e)}",
                 'debug_info': {
-                    'email_provided': email,
-                    'password_provided': bool(password),
-                    'user_active': user_exists.is_active,
-                    'backends': settings.AUTHENTICATION_BACKENDS if hasattr(settings, 'AUTHENTICATION_BACKENDS') else 'Non configuré'
+                    'error_type': type(e).__name__,
+                    'error_message': str(e)
                 }
             })
     

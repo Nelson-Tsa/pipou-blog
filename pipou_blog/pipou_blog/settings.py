@@ -188,7 +188,15 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Configuration du modèle utilisateur personnalisé
 AUTH_USER_MODEL = 'authentication.User'
+
+# Configuration des backends d'authentification pour permettre la connexion par email
+AUTHENTICATION_BACKENDS = [
+    'authentication.backends.EmailBackend',  # Notre backend personnalisé
+    'django.contrib.auth.backends.ModelBackend',  # Backend par défaut (fallback)
+]
 
 # Pour gérer les fichiers média (images)
 MEDIA_URL = '/media/'
