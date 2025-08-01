@@ -1043,7 +1043,8 @@ def show_user_emails(request):
         User = get_user_model()
         users = User.objects.all()
         
-        html = """
+        # Construire le HTML sans f-strings pour éviter les conflits
+        html_start = '''
         <!DOCTYPE html>
         <html>
         <head>
@@ -1059,24 +1060,25 @@ def show_user_emails(request):
         </head>
         <body>
             <h1>📧 Emails des Utilisateurs</h1>
-            <p>Total: {} utilisateurs</p>
-        """.format(users.count())
+            <p>Total: ''' + str(users.count()) + ''' utilisateurs</p>
+        '''
         
+        html_users = ""
         for user in users:
             status_class = "status" if user.is_active else "inactive"
             status_text = "Actif" if user.is_active else "Inactif"
             superuser_text = " (SUPERUSER)" if user.is_superuser else ""
             
-            html += f"""
+            html_users += '''
             <div class="user">
-                <div class="email">📧 {user.email}</div>
-                <div class="username">👤 Username: {user.username}</div>
-                <div class="{status_class}">🔘 {status_text}{superuser_text}</div>
-                <div>📅 Créé: {user.date_joined.strftime('%d/%m/%Y %H:%M')}</div>
+                <div class="email">📧 ''' + str(user.email) + '''</div>
+                <div class="username">👤 Username: ''' + str(user.username) + '''</div>
+                <div class="''' + status_class + '''">🔘 ''' + status_text + superuser_text + '''</div>
+                <div>📅 Créé: ''' + user.date_joined.strftime('%d/%m/%Y %H:%M') + '''</div>
             </div>
-            """
+            '''
         
-        html += """
+        html_end = '''
             <div style="margin-top: 30px;">
                 <h3>🔧 Actions de test:</h3>
                 <p>
@@ -1090,12 +1092,134 @@ def show_user_emails(request):
             </div>
         </body>
         </html>
-        """
+        '''
         
-        return HttpResponse(html)
+        return HttpResponse(html_start + html_users + html_end)
         
     except Exception as e:
         return HttpResponse(f"❌ Erreur: {str(e)}")
+
+def test_login_manual(request):
+    """Test de connexion manuelle pour diagnostiquer les problèmes"""
+    from django.contrib.auth import authenticate, login, get_user_model
+    from django.http import JsonResponse
+    
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        
+        # Test 1: Vérifier si l'utilisateur existe
+        User = get_user_model()
+        try:
+            user_exists = User.objects.get(email=email)
+            user_info = f"✅ Utilisateur trouvé: {user_exists.username} ({user_exists.email})"
+        except User.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': f"❌ Aucun utilisateur trouvé avec l'email: {email}",
+                'users_list': list(User.objects.all().values_list('email', 'username'))
+            })
+        
+        # Test 2: Tester l'authentification
+        user = authenticate(request, email=email, password=password)
+        if user:
+            login(request, user)
+            return JsonResponse({
+                'success': True,
+                'message': f"✅ Connexion réussie pour {user.username}",
+                'user_info': user_info,
+                'redirect_url': '/'
+            })
+        else:
+            # Test 3: Vérifier le mot de passe manuellement
+            password_check = user_exists.check_password(password)
+            return JsonResponse({
+                'success': False,
+                'error': f"❌ Échec de l'authentification",
+                'user_info': user_info,
+                'password_valid': password_check,
+                'debug_info': {
+                    'email_provided': email,
+                    'password_provided': bool(password),
+                    'user_active': user_exists.is_active,
+                    'backends': settings.AUTHENTICATION_BACKENDS if hasattr(settings, 'AUTHENTICATION_BACKENDS') else 'Non configuré'
+                }
+            })
+    
+    # Formulaire de test
+    html = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Test de Connexion</title>
+        <style>
+            body { font-family: "Arial", sans-serif; margin: 40px; }
+            .form-group { margin: 15px 0; }
+            input { padding: 10px; width: 300px; }
+            button { padding: 10px 20px; background: #007cba; color: white; border: none; cursor: pointer; }
+            .result { margin-top: 20px; padding: 15px; border-radius: 5px; }
+            .success { background: #d4edda; color: #155724; }
+            .error { background: #f8d7da; color: #721c24; }
+        </style>
+    </head>
+    <body>
+        <h1>🔍 Test de Connexion - Diagnostic</h1>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Email:</label><br>
+                <input type="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label>Mot de passe:</label><br>
+                <input type="password" name="password" required>
+            </div>
+            <button type="submit">Tester la Connexion</button>
+        </form>
+        <div id="result"></div>
+        
+        <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch('/test-login-manual/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                    }
+                });
+                const data = await response.json();
+                
+                const resultDiv = document.getElementById('result');
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = '<h3>✅ Succès!</h3><p>' + data.message + '</p><p>' + data.user_info + '</p>';
+                    setTimeout(() => window.location.href = data.redirect_url, 2000);
+                } else {
+                    resultDiv.className = 'result error';
+                    let html = '<h3>❌ Échec</h3><p>' + data.error + '</p>';
+                    if (data.user_info) html += '<p>' + data.user_info + '</p>';
+                    if (data.debug_info) {
+                        html += '<h4>Informations de debug:</h4><pre>' + JSON.stringify(data.debug_info, null, 2) + '</pre>';
+                    }
+                    if (data.users_list) {
+                        html += '<h4>Utilisateurs disponibles:</h4><ul>';
+                        data.users_list.forEach(user => html += '<li>' + user[0] + ' (' + user[1] + ')</li>');
+                        html += '</ul>';
+                    }
+                    resultDiv.innerHTML = html;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<div class="result error">Erreur: ' + error.message + '</div>';
+            }
+        });
+        </script>
+    </body>
+    </html>
+    """
+    return HttpResponse(html)
 
 urlpatterns = [
     path('test/', simple_test, name='test'),
