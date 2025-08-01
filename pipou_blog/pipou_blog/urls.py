@@ -346,6 +346,34 @@ def simple_admin_test(request):
     except Exception as e:
         return HttpResponse(f"❌ Erreur: {str(e)}")
 
+def test_admin_redirect(request):
+    """Tester les redirections de l'admin"""
+    import os
+    from django.conf import settings
+    
+    info = f"""
+🔧 Test des redirections Admin Django
+
+🌐 Configuration actuelle:
+- DEBUG: {settings.DEBUG}
+- ALLOWED_HOSTS: {settings.ALLOWED_HOSTS}
+- SECURE_SSL_REDIRECT: {getattr(settings, 'SECURE_SSL_REDIRECT', 'Non défini')}
+- LOGIN_URL: {getattr(settings, 'LOGIN_URL', 'Non défini')}
+- LOGIN_REDIRECT_URL: {getattr(settings, 'LOGIN_REDIRECT_URL', 'Non défini')}
+
+📋 Headers de la requête:
+- HTTP_X_FORWARDED_PROTO: {request.META.get('HTTP_X_FORWARDED_PROTO', 'Non défini')}
+- HTTP_HOST: {request.META.get('HTTP_HOST', 'Non défini')}
+- REQUEST_SCHEME: {request.scheme}
+- IS_SECURE: {request.is_secure()}
+
+🔗 Essayez maintenant:
+- <a href="/admin/">Admin Django</a> (devrait fonctionner maintenant)
+- <a href="/simple-admin/">Admin Simple</a> (backup)
+    """
+    
+    return HttpResponse(info)
+
 urlpatterns = [
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
@@ -357,7 +385,8 @@ urlpatterns = [
     path('simple-admin/', simple_admin_test, name='simple_admin'),
     path('check-static/', check_static_files, name='check_static'),
     path('test-admin/', test_admin_access, name='test_admin'),
-    path('admin/', admin.site.urls),
+    path('test-redirect/', test_admin_redirect, name='test_redirect'),
+    path('admin/', admin.site.urls),  # Réactivé avec la nouvelle configuration
     path('', include('blog.urls')),
     path('profile/', include('user_profile.urls')),
     path('', include('authentication.urls')),
