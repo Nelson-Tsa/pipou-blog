@@ -1343,10 +1343,13 @@ def test_direct_login(request):
                 user_obj = User.objects.get(email=email)
                 user_info = f"Utilisateur trouvé: {user_obj.username} - Actif: {user_obj.is_active}"
             except User.DoesNotExist:
+                # Lister tous les emails disponibles
+                all_emails = list(User.objects.values_list('email', flat=True))
                 return JsonResponse({
                     'success': False,
-                    'error': f"Utilisateur {email} n'existe pas",
-                    'all_emails': list(User.objects.values_list('email', flat=True))
+                    'error': f"Utilisateur avec email '{email}' non trouvé",
+                    'all_emails': all_emails,
+                    'total_users': User.objects.count()
                 })
             
             # Test d'authentification
@@ -1356,7 +1359,13 @@ def test_direct_login(request):
                 login(request, user)
                 return JsonResponse({
                     'success': True,
-                    'message': f"Connexion réussie ! Bienvenue {user.username}",
+                    'message': f"✅ Connexion réussie ! Bienvenue {user.username}",
+                    'user_info': {
+                        'username': user.username,
+                        'email': user.email,
+                        'is_active': user.is_active,
+                        'is_superuser': user.is_superuser
+                    },
                     'redirect_url': '/'
                 })
             else:
@@ -1364,12 +1373,15 @@ def test_direct_login(request):
                 password_valid = user_obj.check_password(password)
                 return JsonResponse({
                     'success': False,
-                    'error': "Mot de passe incorrect",
-                    'user_info': user_info,
-                    'password_check': password_valid,
-                    'suggestions': [
+                    'error': "❌ Mot de passe incorrect",
+                    'user_info': {
+                        'username': user_obj.username,
+                        'email': user_obj.email,
+                        'is_active': user_obj.is_active
+                    },
+                    'password_hints': [
                         "admin123",
-                        "password",
+                        "password", 
                         "admin",
                         "123456"
                     ]
@@ -1378,7 +1390,7 @@ def test_direct_login(request):
         except Exception as e:
             return JsonResponse({
                 'success': False,
-                'error': f"Erreur: {str(e)}",
+                'error': f"❌ Erreur système: {str(e)}",
                 'error_type': type(e).__name__
             })
     
@@ -1449,6 +1461,179 @@ def test_direct_login(request):
     """
     return HttpResponse(html)
 
+def test_manual_auth(request):
+    """Test de connexion manuelle sans utiliser authenticate()"""
+    from django.contrib.auth import login, get_user_model
+    from django.http import JsonResponse
+    
+    if request.method == 'POST':
+        try:
+            email = request.POST.get('email', 'admin@pipou.blog')
+            password = request.POST.get('password', '')
+            
+            User = get_user_model()
+            
+            # Étape 1: Trouver l'utilisateur par email
+            try:
+                user = User.objects.get(email=email)
+            except User.DoesNotExist:
+                # Lister tous les emails disponibles
+                all_emails = list(User.objects.values_list('email', flat=True))
+                return JsonResponse({
+                    'success': False,
+                    'error': f"Utilisateur avec email '{email}' non trouvé",
+                    'available_emails': all_emails,
+                    'total_users': User.objects.count()
+                })
+            
+            # Étape 2: Vérifier le mot de passe manuellement
+            if user.check_password(password):
+                # Étape 3: Connecter l'utilisateur manuellement
+                login(request, user)
+                return JsonResponse({
+                    'success': True,
+                    'message': f"✅ Connexion réussie ! Bienvenue {user.username}",
+                    'user_info': {
+                        'username': user.username,
+                        'email': user.email,
+                        'is_active': user.is_active,
+                        'is_superuser': user.is_superuser
+                    },
+                    'redirect_url': '/'
+                })
+            else:
+                return JsonResponse({
+                    'success': False,
+                    'error': "❌ Mot de passe incorrect",
+                    'user_info': {
+                        'username': user.username,
+                        'email': user.email,
+                        'is_active': user.is_active
+                    },
+                    'password_hints': [
+                        "admin123",
+                        "password", 
+                        "admin",
+                        "123456",
+                        "pipou123"
+                    ]
+                })
+                
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': f"❌ Erreur système: {str(e)}",
+                'error_type': type(e).__name__,
+                'debug': True
+            })
+    
+    # Interface simple
+    html = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Test Connexion Manuelle</title>
+        <style>
+            body { font-family: Arial, sans-serif; margin: 40px; max-width: 600px; }
+            .form-group { margin: 15px 0; }
+            label { display: block; margin-bottom: 5px; font-weight: bold; }
+            input { padding: 10px; width: 100%; border: 1px solid #ddd; border-radius: 4px; }
+            button { padding: 10px 20px; background: #007cba; color: white; border: none; border-radius: 4px; cursor: pointer; }
+            button:hover { background: #005a87; }
+            .result { margin-top: 20px; padding: 15px; border-radius: 5px; }
+            .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+            .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+            .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        </style>
+    </head>
+    <body>
+        <h1>🔐 Test Connexion Manuelle</h1>
+        <p>Cette méthode contourne les backends d'authentification et teste directement.</p>
+        
+        <form id="loginForm">
+            <div class="form-group">
+                <label for="email">Email:</label>
+                <input type="email" id="email" name="email" value="admin@pipou.blog" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Mot de passe:</label>
+                <input type="password" id="password" name="password" placeholder="Essayez: admin123, password, admin..." required>
+            </div>
+            
+            <button type="submit">🚀 Tester la Connexion</button>
+        </form>
+        
+        <div id="result"></div>
+        
+        <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            const resultDiv = document.getElementById('result');
+            
+            // Afficher un indicateur de chargement
+            resultDiv.innerHTML = '<div class="info">⏳ Test en cours...</div>';
+            
+            try {
+                const response = await fetch('/test-manual-auth/', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Erreur HTTP: ' + response.status);
+                }
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = 
+                        '<h3>' + data.message + '</h3>' +
+                        '<p><strong>Utilisateur:</strong> ' + data.user_info.username + '</p>' +
+                        '<p><strong>Email:</strong> ' + data.user_info.email + '</p>' +
+                        '<p><strong>Superuser:</strong> ' + (data.user_info.is_superuser ? 'Oui' : 'Non') + '</p>' +
+                        '<p>Redirection vers l\\'accueil dans 3 secondes...</p>';
+                    
+                    setTimeout(() => {
+                        window.location.href = data.redirect_url;
+                    }, 3000);
+                } else {
+                    resultDiv.className = 'result error';
+                    let html = '<h3>' + data.error + '</h3>';
+                    
+                    if (data.user_info) {
+                        html += '<div class="info">' +
+                                '<p><strong>Utilisateur trouvé:</strong> ' + data.user_info.username + '</p>' +
+                                '<p><strong>Email:</strong> ' + data.user_info.email + '</p>' +
+                                '<p><strong>Actif:</strong> ' + (data.user_info.is_active ? 'Oui' : 'Non') + '</p>' +
+                                '</div>';
+                    }
+                    
+                    if (data.password_hints) {
+                        html += '<p><strong>Mots de passe à essayer:</strong> ' + data.password_hints.join(', ') + '</p>';
+                    }
+                    
+                    if (data.available_emails) {
+                        html += '<p><strong>Emails disponibles (' + data.total_users + '):</strong><br>' + 
+                                data.available_emails.join('<br>') + '</p>';
+                    }
+                    
+                    resultDiv.innerHTML = html;
+                }
+                
+            } catch (error) {
+                resultDiv.className = 'result error';
+                resultDiv.innerHTML = '<h3>❌ Erreur de connexion</h3><p>' + error.message + '</p>';
+            }
+        });
+        </script>
+    </body>
+    </html>
+    """
+    return HttpResponse(html)
+
 urlpatterns = [
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
@@ -1469,6 +1654,7 @@ urlpatterns = [
     path('show-emails/', show_user_emails, name='show_emails'),
     path('test-auth-backends/', test_auth_backends, name='test_auth_backends'),
     path('test-direct-login/', test_direct_login, name='test_direct_login'),
+    path('test-manual-auth/', test_manual_auth, name='test_manual_auth'),
     path('admin-login/', admin_custom_login, name='admin_custom_login'),
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
     path('admin-alt/', admin_alternative, name='admin_alt'),
