@@ -802,6 +802,117 @@ def test_login_status(request):
     except Exception as e:
         return HttpResponse(f"❌ Erreur: {str(e)}")
 
+def debug_login(request):
+    """Diagnostic complet des problèmes de connexion"""
+    try:
+        from authentication.models import User
+        from django.contrib.auth import authenticate
+        from django.conf import settings
+        
+        # Informations sur les utilisateurs
+        users = User.objects.all()
+        users_info = ""
+        for user in users:
+            users_info += f"""
+            <tr>
+                <td>{user.username}</td>
+                <td>{user.email}</td>
+                <td>{'✅' if user.is_active else '❌'}</td>
+                <td>{'✅' if user.is_staff else '❌'}</td>
+                <td>{'✅' if user.check_password('admin123') else '❌'}</td>
+            </tr>
+            """
+        
+        # Test d'authentification
+        test_auth = ""
+        try:
+            test_user = authenticate(username='admin', password='admin123')
+            if test_user:
+                test_auth = f"✅ Authentification réussie pour 'admin'"
+            else:
+                test_auth = "❌ Échec de l'authentification pour 'admin'"
+        except Exception as e:
+            test_auth = f"❌ Erreur d'authentification: {str(e)}"
+        
+        # Configuration actuelle
+        config_info = f"""
+        - LOGIN_URL: {getattr(settings, 'LOGIN_URL', 'Non défini')}
+        - LOGIN_REDIRECT_URL: {getattr(settings, 'LOGIN_REDIRECT_URL', 'Non défini')}
+        - AUTH_USER_MODEL: {getattr(settings, 'AUTH_USER_MODEL', 'Non défini')}
+        - SESSION_COOKIE_SECURE: {getattr(settings, 'SESSION_COOKIE_SECURE', 'Non défini')}
+        - CSRF_COOKIE_SECURE: {getattr(settings, 'CSRF_COOKIE_SECURE', 'Non défini')}
+        """
+        
+        return HttpResponse(f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Diagnostic Connexion - PipouBlog</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
+                th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
+                th {{ background-color: #007cba; color: white; }}
+                tr:nth-child(even) {{ background-color: #f2f2f2; }}
+                .header {{ background: #007cba; color: white; padding: 20px; margin: -20px -20px 20px -20px; }}
+                .section {{ background: #f8f9fa; border: 1px solid #dee2e6; padding: 15px; margin: 15px 0; border-radius: 4px; }}
+                .btn {{ display: inline-block; background: #007cba; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; margin: 5px; }}
+                .btn:hover {{ background: #005a87; }}
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>🔧 Diagnostic Complet de Connexion</h1>
+            </div>
+            
+            <div class="section">
+                <h3>🧪 Test d'authentification:</h3>
+                <p>{test_auth}</p>
+            </div>
+            
+            <div class="section">
+                <h3>⚙️ Configuration Django:</h3>
+                <pre>{config_info}</pre>
+            </div>
+            
+            <div class="section">
+                <h3>👥 Utilisateurs dans la base de données:</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Actif</th>
+                            <th>Staff</th>
+                            <th>Mot de passe 'admin123' OK</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {users_info}
+                    </tbody>
+                </table>
+                <p><strong>Total:</strong> {users.count()} utilisateurs</p>
+            </div>
+            
+            <div class="section">
+                <h3>🔗 Actions de test:</h3>
+                <p>
+                    <a href="/create-admin/" class="btn">Créer/Réinitialiser Admin</a>
+                    <a href="/login/" class="btn">Tester Connexion</a>
+                    <a href="/admin-login/" class="btn">Connexion Admin Personnalisée</a>
+                </p>
+            </div>
+            
+            <div style="margin-top: 30px; text-align: center;">
+                <p><a href="/">← Retour au site</a></p>
+            </div>
+        </body>
+        </html>
+        """)
+        
+    except Exception as e:
+        return HttpResponse(f"❌ Erreur de diagnostic: {str(e)}")
+
 urlpatterns = [
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
@@ -817,6 +928,7 @@ urlpatterns = [
     path('test-admin/', test_admin_access, name='test_admin'),
     path('test-redirect/', test_admin_redirect, name='test_redirect'),
     path('test-login/', test_login_status, name='test_login'),
+    path('debug-login/', debug_login, name='debug_login'),
     path('admin-alt/', admin_alternative, name='admin_alt'),
     path('admin-login/', admin_custom_login, name='admin_custom_login'),
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
