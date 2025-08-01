@@ -84,11 +84,33 @@ def debug_login(request):
 def test_post(request):
     """Test ultra simple pour vérifier que les POST arrivent"""
     if request.method == 'POST':
-        return HttpResponse(f"POST REÇU ! Données: {dict(request.POST)}")
-    return HttpResponse("""
-    <form method="POST">
-        <input type="hidden" name="csrfmiddlewaretoken" value="{csrf_token}">
-        <input type="text" name="test" value="hello">
-        <button type="submit">TEST POST</button>
-    </form>
-    """.format(csrf_token=request.META.get('CSRF_COOKIE', 'no-csrf')))
+        return HttpResponse(f"🎉 POST REÇU ! Données: {dict(request.POST)}")
+    
+    # Générer le token CSRF correctement
+    from django.middleware.csrf import get_token
+    csrf_token = get_token(request)
+    
+    return HttpResponse(f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Test POST</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; margin: 40px; }}
+            form {{ max-width: 400px; margin: 0 auto; }}
+            input, button {{ padding: 10px; margin: 10px 0; width: 100%; }}
+            button {{ background: #007cba; color: white; border: none; cursor: pointer; }}
+            .success {{ background: #d4edda; padding: 15px; border-radius: 5px; color: #155724; }}
+        </style>
+    </head>
+    <body>
+        <h1>🧪 Test POST Ultra Simple</h1>
+        <form method="POST">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{csrf_token}">
+            <input type="text" name="test" value="hello world" placeholder="Tapez quelque chose...">
+            <button type="submit">🚀 ENVOYER POST</button>
+        </form>
+        <p><a href="/login/">← Retour au login</a></p>
+    </body>
+    </html>
+    """)

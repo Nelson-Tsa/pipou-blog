@@ -200,8 +200,8 @@ AUTHENTICATION_BACKENDS = [
 
 # Configuration des redirections d'authentification
 LOGIN_REDIRECT_URL = '/'  # Redirection après connexion réussie
-LOGIN_URL = '/authentication/login/'  # URL de la page de connexion
-LOGOUT_REDIRECT_URL = '/authentication/login/'  # Redirection après déconnexion
+LOGIN_URL = '/login/'  # URL de la page de connexion (correct car auth URLs sans préfixe)
+LOGOUT_REDIRECT_URL = '/login/'  # Redirection après déconnexion
 
 # Pour gérer les fichiers média (images)
 MEDIA_URL = '/media/'

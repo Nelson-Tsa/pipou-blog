@@ -4,6 +4,18 @@
 
     <section class="connexion-container">
         <h1>Se connecter</h1>
+        
+        <!-- Debug info -->
+        <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 12px;">
+            <strong>🔍 Debug Info:</strong><br>
+            Request method: {{ request.method }}<br>
+            Form errors: {{ form.errors }}<br>
+            Form non-field errors: {{ form.non_field_errors }}<br>
+            User authenticated: {{ user.is_authenticated }}<br>
+            <a href="{% url 'debug_login' %}" style="color: blue;">→ Debug avancé</a> | 
+            <a href="/test-post/" style="color: green;">→ Test POST</a>
+        </div>
+        
         {% if form.non_field_errors %}
             <div class="error non-field-errors">
             {% for error in form.non_field_errors %}
