@@ -376,7 +376,7 @@ def list_users(request):
         <head>
             <title>Gestion des utilisateurs - PipouBlog</title>
             <style>
-                body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                body {{ font-family: "Arial", sans-serif; margin: 20px; }}
                 table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
                 th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
                 th {{ background-color: #007cba; color: white; }}
@@ -449,7 +449,7 @@ def list_posts(request):
         <head>
             <title>Gestion des articles - PipouBlog</title>
             <style>
-                body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                body {{ font-family: "Arial", sans-serif; margin: 20px; }}
                 table {{ width: 100%; border-collapse: collapse; margin-top: 20px; }}
                 th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
                 th {{ background-color: #007cba; color: white; }}
@@ -551,7 +551,7 @@ def admin_custom_login(request):
     <head>
         <title>Connexion Admin - PipouBlog</title>
         <style>
-            body {{ font-family: Arial, sans-serif; max-width: 400px; margin: 100px auto; padding: 20px; }}
+            body {{ font-family: "Arial", sans-serif; max-width: 400px; margin: 100px auto; padding: 20px; }}
             .form-group {{ margin-bottom: 15px; }}
             label {{ display: block; margin-bottom: 5px; font-weight: bold; }}
             input[type="text"], input[type="password"] {{ width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }}
@@ -568,12 +568,12 @@ def admin_custom_login(request):
         
         <form method="post">
             <div class="form-group">
-                <label for="username">Nom d'utilisateur:</label>
+                <label for="username">Nom d'utilisateur:</label><br>
                 <input type="text" id="username" name="username" required>
             </div>
             
             <div class="form-group">
-                <label for="password">Mot de passe:</label>
+                <label for="password">Mot de passe:</label><br>
                 <input type="password" id="password" name="password" required>
             </div>
             
@@ -614,7 +614,7 @@ def admin_dashboard(request):
         <head>
             <title>Dashboard Admin - PipouBlog</title>
             <style>
-                body {{ font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }}
+                body {{ font-family: "Arial", sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }}
                 .header {{ background: #007cba; color: white; padding: 20px; margin: -20px -20px 20px -20px; }}
                 .stats {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }}
                 .stat-card {{ background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
@@ -701,7 +701,7 @@ def admin_alternative(request):
         <head>
             <title>Admin Alternative - PipouBlog</title>
             <style>
-                body {{ font-family: Arial, sans-serif; max-width: 600px; margin: 100px auto; padding: 20px; }}
+                body {{ font-family: "Arial", sans-serif; max-width: 600px; margin: 100px auto; padding: 20px; }}
                 .header {{ background: #007cba; color: white; padding: 20px; margin: -20px -20px 20px -20px; text-align: center; }}
                 .btn {{ display: inline-block; background: #007cba; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; margin: 5px; }}
                 .btn:hover {{ background: #005a87; }}
@@ -761,7 +761,7 @@ def test_login_status(request):
         <head>
             <title>Test Connexion - PipouBlog</title>
             <style>
-                body {{ font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }}
+                body {{ font-family: "Arial", sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }}
                 .header {{ background: #007cba; color: white; padding: 20px; margin: -20px -20px 20px -20px; text-align: center; }}
                 .status {{ background: #f8f9fa; border: 1px solid #dee2e6; padding: 20px; border-radius: 4px; margin: 20px 0; }}
                 .btn {{ display: inline-block; background: #007cba; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; margin: 5px; }}
@@ -849,7 +849,7 @@ def debug_login(request):
         <head>
             <title>Diagnostic Connexion - PipouBlog</title>
             <style>
-                body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                body {{ font-family: "Arial", sans-serif; margin: 20px; }}
                 table {{ width: 100%; border-collapse: collapse; margin: 20px 0; }}
                 th, td {{ border: 1px solid #ddd; padding: 8px; text-align: left; }}
                 th {{ background-color: #007cba; color: white; }}
@@ -967,7 +967,7 @@ def test_login_manual(request):
     <head>
         <title>Test de Connexion</title>
         <style>
-            body { font-family: Arial; margin: 40px; }
+            body { font-family: "Arial", sans-serif; margin: 40px; }
             .form-group { margin: 15px 0; }
             input { padding: 10px; width: 300px; }
             button { padding: 10px 20px; background: #007cba; color: white; border: none; cursor: pointer; }
@@ -1049,7 +1049,7 @@ def show_user_emails(request):
         <head>
             <title>Emails des Utilisateurs</title>
             <style>
-                body { font-family: Arial; margin: 40px; }
+                body { font-family: "Arial", sans-serif; margin: 40px; }
                 .user { margin: 10px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
                 .email { font-weight: bold; color: #007cba; }
                 .username { color: #666; }
