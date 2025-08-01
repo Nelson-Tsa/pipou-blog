@@ -205,6 +205,21 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
     
-    # Désactiver certaines vérifications qui peuvent causer des problèmes sur Vercel
+    # Configuration spécifique pour Django Admin sur Vercel
+    FORCE_SCRIPT_NAME = None
+    LOGIN_URL = '/admin/login/'
+    LOGIN_REDIRECT_URL = '/admin/'
+    
+    # Headers de sécurité - configuration plus permissive pour Vercel
     SECURE_BROWSER_XSS_FILTER = False
     SECURE_CONTENT_TYPE_NOSNIFF = False
+    SECURE_HSTS_SECONDS = 0  # Désactiver HSTS qui peut causer des problèmes
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
+    SECURE_HSTS_PRELOAD = False
+    
+    # Configuration des domaines autorisés
+    ALLOWED_HOSTS = ['*']  # Déjà configuré mais on s'assure
+    
+    # Configuration pour éviter les problèmes de reverse proxy
+    USE_X_FORWARDED_HOST = True
+    USE_X_FORWARDED_PORT = True
