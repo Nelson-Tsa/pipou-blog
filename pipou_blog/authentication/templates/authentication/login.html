@@ -11,7 +11,7 @@
             {% endfor %}
             </div>
         {% endif %}
-        <form method="POST" class="connexion-form" id="login-form">
+        <form method="POST" class="connexion-form">
             {% csrf_token %}
             <div class="connexion_input">
                 {{ form.email.label}} {{ form.email }}
@@ -31,10 +31,5 @@
         <p>Pas encore de compte ? <a class="link" href="{% url 'register' %}">S'inscrire</a></p>
     </section>
 
-<script>
-    document.getElementById('login-form').addEventListener('submit', function(e) {
-        console.log('Form submitted');
-    });
-</script>
 
 {% endblock %}
