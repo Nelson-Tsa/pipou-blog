@@ -193,3 +193,18 @@ AUTH_USER_MODEL = 'authentication.User'
 # Pour gérer les fichiers média (images)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# Configuration pour Vercel - éviter les redirections infinies
+if not DEBUG:
+    # Configuration pour HTTPS sur Vercel
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SECURE_SSL_REDIRECT = False  # Vercel gère déjà HTTPS
+    USE_TZ = True
+    
+    # Configuration pour les sessions et cookies
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    
+    # Désactiver certaines vérifications qui peuvent causer des problèmes sur Vercel
+    SECURE_BROWSER_XSS_FILTER = False
+    SECURE_CONTENT_TYPE_NOSNIFF = False

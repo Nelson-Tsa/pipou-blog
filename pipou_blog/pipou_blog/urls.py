@@ -314,6 +314,38 @@ def create_admin_user(request):
     except Exception as e:
         return HttpResponse(f"❌ Erreur lors de la création du superuser: {str(e)}")
 
+def simple_admin_test(request):
+    """Test simple de l'interface admin sans redirection"""
+    try:
+        from authentication.models import User
+        from blog.models import Post
+        
+        # Statistiques simples
+        users_count = User.objects.count()
+        posts_count = Post.objects.count()
+        superusers = User.objects.filter(is_superuser=True)
+        
+        return HttpResponse(f"""
+🔧 Test Admin Simple (sans redirection)
+
+📊 Statistiques de la base de données:
+- Utilisateurs: {users_count}
+- Articles: {posts_count}
+- Superusers: {superusers.count()}
+
+👥 Superusers disponibles:
+{chr(10).join([f"- {u.username} (Staff: {u.is_staff}, Super: {u.is_superuser})" for u in superusers])}
+
+🔗 Actions disponibles:
+- <a href="/create-admin/">Créer/Configurer admin</a>
+- <a href="/admin/">Essayer l'admin Django</a>
+
+💡 Si l'admin Django ne fonctionne pas, utilisez cette interface pour gérer vos données.
+        """)
+        
+    except Exception as e:
+        return HttpResponse(f"❌ Erreur: {str(e)}")
+
 urlpatterns = [
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
@@ -322,6 +354,7 @@ urlpatterns = [
     path('load-fixtures-safe/', load_fixtures_safe, name='load_fixtures_safe'),
     path('create-test-data/', create_test_data, name='create_test_data'),
     path('create-admin/', create_admin_user, name='create_admin'),
+    path('simple-admin/', simple_admin_test, name='simple_admin'),
     path('check-static/', check_static_files, name='check_static'),
     path('test-admin/', test_admin_access, name='test_admin'),
     path('admin/', admin.site.urls),
