@@ -9,28 +9,7 @@ import os
 from django.conf import settings
 from django.conf.urls.static import static
 
-def test_db_connection(request):
-    """A simple view to test the database connection."""
-    from django.http import HttpResponse
-    from authentication.models import User
-    import os
-    
-    db_url = os.getenv("DATABASE_URL")
-    db_info = f"DATABASE_URL is set: {bool(db_url)}\n"
-    if db_url:
-        db_info += f"DATABASE_URL value (first 15 chars): {db_url[:15]}..."
-
-    try:
-        user_count = User.objects.count()
-        return HttpResponse(f"<h1>✅ DB Connection OK</h1><p>User count: {user_count}</p><pre>{db_info}</pre>")
-    except Exception as e:
-        return HttpResponse(f"<h1>❌ DB Connection FAILED</h1><p>Error: {str(e)}</p><pre>{db_info}</pre>")
-
-
-
-
 def simple_test(request):
-
     """Vue de test ultra-simple"""
     try:
         return HttpResponse(f"Django OK! DATABASE_URL: {'SET' if os.getenv('DATABASE_URL') else 'NOT SET'}")
@@ -787,7 +766,6 @@ def test_login_status(request):
                 .status {{ background: #f8f9fa; border: 1px solid #dee2e6; padding: 20px; border-radius: 4px; margin: 20px 0; }}
                 .btn {{ display: inline-block; background: #007cba; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; margin: 5px; }}
                 .btn:hover {{ background: #005a87; }}
-                .warning {{ background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 4px; margin: 20px 0; }}
             </style>
         </head>
         <body>
@@ -941,55 +919,44 @@ def test_login_manual(request):
     from django.http import JsonResponse
     
     if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        
+        # Test 1: Vérifier si l'utilisateur existe
+        User = get_user_model()
         try:
-            email = request.POST.get('email')
-            password = request.POST.get('password')
-            
-            # Test 1: Vérifier si l'utilisateur existe
-            User = get_user_model()
-            try:
-                user_exists = User.objects.get(email=email)
-                user_info = f"✅ Utilisateur trouvé: {user_exists.username} ({user_exists.email})"
-            except User.DoesNotExist:
-                return JsonResponse({
-                    'success': False,
-                    'error': f"❌ Aucun utilisateur trouvé avec l'email: {email}",
-                    'users_list': list(User.objects.all().values_list('email', 'username'))
-                })
-            
-            # Test 2: Tester l'authentification
-            user = authenticate(request, email=email, password=password)
-            if user:
-                login(request, user)
-                return JsonResponse({
-                    'success': True,
-                    'message': f"✅ Connexion réussie pour {user.username}",
-                    'user_info': user_info,
-                    'redirect_url': '/'
-                })
-            else:
-                # Test 3: Vérifier le mot de passe manuellement
-                password_check = user_exists.check_password(password)
-                return JsonResponse({
-                    'success': False,
-                    'error': f"❌ Échec de l'authentification",
-                    'user_info': user_info,
-                    'password_valid': password_check,
-                    'debug_info': {
-                        'email_provided': email,
-                        'password_provided': bool(password),
-                        'user_active': user_exists.is_active,
-                        'backends': settings.AUTHENTICATION_BACKENDS if hasattr(settings, 'AUTHENTICATION_BACKENDS') else 'Non configuré'
-                    }
-                })
-        except Exception as e:
-            # Gestion d'erreur globale pour éviter les erreurs JavaScript
+            user_exists = User.objects.get(email=email)
+            user_info = f"✅ Utilisateur trouvé: {user_exists.username} ({user_exists.email})"
+        except User.DoesNotExist:
             return JsonResponse({
                 'success': False,
-                'error': f"❌ Erreur système: {str(e)}",
+                'error': f"❌ Aucun utilisateur trouvé avec l'email: {email}",
+                'users_list': list(User.objects.all().values_list('email', 'username'))
+            })
+        
+        # Test 2: Tester l'authentification
+        user = authenticate(request, email=email, password=password)
+        if user:
+            login(request, user)
+            return JsonResponse({
+                'success': True,
+                'message': f"✅ Connexion réussie pour {user.username}",
+                'user_info': user_info,
+                'redirect_url': '/'
+            })
+        else:
+            # Test 3: Vérifier le mot de passe manuellement
+            password_check = user_exists.check_password(password)
+            return JsonResponse({
+                'success': False,
+                'error': f"❌ Échec de l'authentification",
+                'user_info': user_info,
+                'password_valid': password_check,
                 'debug_info': {
-                    'error_type': type(e).__name__,
-                    'error_message': str(e)
+                    'email_provided': email,
+                    'password_provided': bool(password),
+                    'user_active': user_exists.is_active,
+                    'backends': settings.AUTHENTICATION_BACKENDS if hasattr(settings, 'AUTHENTICATION_BACKENDS') else 'Non configuré'
                 }
             })
     
@@ -1138,55 +1105,44 @@ def test_login_manual(request):
     from django.http import JsonResponse
     
     if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        
+        # Test 1: Vérifier si l'utilisateur existe
+        User = get_user_model()
         try:
-            email = request.POST.get('email')
-            password = request.POST.get('password')
-            
-            # Test 1: Vérifier si l'utilisateur existe
-            User = get_user_model()
-            try:
-                user_exists = User.objects.get(email=email)
-                user_info = f"✅ Utilisateur trouvé: {user_exists.username} ({user_exists.email})"
-            except User.DoesNotExist:
-                return JsonResponse({
-                    'success': False,
-                    'error': f"❌ Aucun utilisateur trouvé avec l'email: {email}",
-                    'users_list': list(User.objects.all().values_list('email', 'username'))
-                })
-            
-            # Test 2: Tester l'authentification
-            user = authenticate(request, email=email, password=password)
-            if user:
-                login(request, user)
-                return JsonResponse({
-                    'success': True,
-                    'message': f"✅ Connexion réussie pour {user.username}",
-                    'user_info': user_info,
-                    'redirect_url': '/'
-                })
-            else:
-                # Test 3: Vérifier le mot de passe manuellement
-                password_check = user_exists.check_password(password)
-                return JsonResponse({
-                    'success': False,
-                    'error': f"❌ Échec de l'authentification",
-                    'user_info': user_info,
-                    'password_valid': password_check,
-                    'debug_info': {
-                        'email_provided': email,
-                        'password_provided': bool(password),
-                        'user_active': user_exists.is_active,
-                        'backends': settings.AUTHENTICATION_BACKENDS if hasattr(settings, 'AUTHENTICATION_BACKENDS') else 'Non configuré'
-                    }
-                })
-        except Exception as e:
-            # Gestion d'erreur globale pour éviter les erreurs JavaScript
+            user_exists = User.objects.get(email=email)
+            user_info = f"✅ Utilisateur trouvé: {user_exists.username} ({user_exists.email})"
+        except User.DoesNotExist:
             return JsonResponse({
                 'success': False,
-                'error': f"❌ Erreur système: {str(e)}",
+                'error': f"❌ Aucun utilisateur trouvé avec l'email: {email}",
+                'users_list': list(User.objects.all().values_list('email', 'username'))
+            })
+        
+        # Test 2: Tester l'authentification
+        user = authenticate(request, email=email, password=password)
+        if user:
+            login(request, user)
+            return JsonResponse({
+                'success': True,
+                'message': f"✅ Connexion réussie pour {user.username}",
+                'user_info': user_info,
+                'redirect_url': '/'
+            })
+        else:
+            # Test 3: Vérifier le mot de passe manuellement
+            password_check = user_exists.check_password(password)
+            return JsonResponse({
+                'success': False,
+                'error': f"❌ Échec de l'authentification",
+                'user_info': user_info,
+                'password_valid': password_check,
                 'debug_info': {
-                    'error_type': type(e).__name__,
-                    'error_message': str(e)
+                    'email_provided': email,
+                    'password_provided': bool(password),
+                    'user_active': user_exists.is_active,
+                    'backends': settings.AUTHENTICATION_BACKENDS if hasattr(settings, 'AUTHENTICATION_BACKENDS') else 'Non configuré'
                 }
             })
     
@@ -1265,405 +1221,7 @@ def test_login_manual(request):
     """
     return HttpResponse(html)
 
-def test_auth_backends(request):
-    """Tester les backends d'authentification"""
-    try:
-        from django.contrib.auth import get_user_model
-        from django.conf import settings
-        
-        html = """
-        <!DOCTYPE html>
-        <html>
-        <head>
-            <title>Test Backends Auth</title>
-            <style>
-                body { font-family: Arial, sans-serif; margin: 40px; }
-                .success { color: green; }
-                .error { color: red; }
-                .info { color: blue; }
-            </style>
-        </head>
-        <body>
-            <h1>🔧 Test des Backends d'Authentification</h1>
-        """
-        
-        # Test 1: Vérifier les settings
-        html += "<h3>1. Configuration des Settings:</h3>"
-        try:
-            auth_backends = getattr(settings, 'AUTHENTICATION_BACKENDS', None)
-            if auth_backends:
-                html += f'<p class="success">✅ AUTHENTICATION_BACKENDS configuré: {auth_backends}</p>'
-            else:
-                html += '<p class="error">❌ AUTHENTICATION_BACKENDS non configuré</p>'
-        except Exception as e:
-            html += f'<p class="error">❌ Erreur settings: {str(e)}</p>'
-        
-        # Test 2: Vérifier le modèle utilisateur
-        html += "<h3>2. Modèle Utilisateur:</h3>"
-        try:
-            User = get_user_model()
-            html += f'<p class="success">✅ Modèle utilisateur: {User}</p>'
-            users_count = User.objects.count()
-            html += f'<p class="info">📊 Nombre d\'utilisateurs: {users_count}</p>'
-        except Exception as e:
-            html += f'<p class="error">❌ Erreur modèle utilisateur: {str(e)}</p>'
-        
-        # Test 3: Tester l'import du backend
-        html += "<h3>3. Import du Backend:</h3>"
-        try:
-            from authentication.backends import EmailBackend
-            backend = EmailBackend()
-            html += '<p class="success">✅ Backend EmailBackend importé avec succès</p>'
-        except Exception as e:
-            html += f'<p class="error">❌ Erreur import backend: {str(e)}</p>'
-        
-        # Test 4: Test simple d'authentification
-        html += "<h3>4. Test d'Authentification Simple:</h3>"
-        try:
-            from django.contrib.auth import authenticate
-            # Test avec des identifiants bidon pour voir si ça plante
-            user = authenticate(request, email="test@test.com", password="test")
-            if user is None:
-                html += '<p class="success">✅ Fonction authenticate() fonctionne (retourne None pour utilisateur inexistant)</p>'
-            else:
-                html += f'<p class="info">ℹ️ Utilisateur trouvé: {user}</p>'
-        except Exception as e:
-            html += f'<p class="error">❌ Erreur authenticate(): {str(e)}</p>'
-        
-        html += """
-            <h3>5. Actions:</h3>
-            <p>
-                <a href="/show-emails/" style="background: #007cba; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;">Voir les Utilisateurs</a>
-                <a href="/test-login-manual/" style="background: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px; margin-left: 10px;">Test de Connexion</a>
-            </p>
-            <p><a href="/">← Retour au site</a></p>
-        </body>
-        </html>
-        """
-        
-        return HttpResponse(html)
-        
-    except Exception as e:
-        return HttpResponse(f"❌ Erreur globale: {str(e)}")
-
-def test_direct_login(request):
-    """Test de connexion directe avec admin@pipou.blog"""
-    from django.contrib.auth import authenticate, login, get_user_model
-    from django.http import JsonResponse
-    from django.middleware.csrf import get_token
-
-    if request.method == 'POST':
-        try:
-            # Test avec admin@pipou.blog et différents mots de passe courants
-            email = "admin@pipou.blog"
-            password = request.POST.get('password', '')
-            
-            User = get_user_model()
-            
-            # Vérifier si l'utilisateur existe
-            try:
-                user_obj = User.objects.get(email=email)
-                user_info = f"Utilisateur trouvé: {user_obj.username} - Actif: {user_obj.is_active}"
-            except User.DoesNotExist:
-                # Lister tous les emails disponibles
-                all_emails = list(User.objects.values_list('email', flat=True))
-                return JsonResponse({
-                    'success': False,
-                    'error': f"Utilisateur avec email '{email}' non trouvé",
-                    'all_emails': all_emails,
-                    'total_users': User.objects.count()
-                })
-            
-            # Test d'authentification
-            user = authenticate(request, email=email, password=password)
-            
-            if user:
-                login(request, user)
-                return JsonResponse({
-                    'success': True,
-                    'message': f"✅ Connexion réussie ! Bienvenue {user.username}",
-                    'user_info': {
-                        'username': user.username,
-                        'email': user.email,
-                        'is_active': user.is_active,
-                        'is_superuser': user.is_superuser
-                    },
-                    'redirect_url': '/'
-                })
-            else:
-                # Test manuel du mot de passe
-                password_valid = user_obj.check_password(password)
-                return JsonResponse({
-                    'success': False,
-                    'error': "❌ Mot de passe incorrect",
-                    'user_info': {
-                        'username': user_obj.username,
-                        'email': user_obj.email,
-                        'is_active': user_obj.is_active
-                    },
-                    'password_hints': [
-                        "admin123",
-                        "password", 
-                        "admin",
-                        "123456"
-                    ]
-                })
-                
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'error': f"❌ Erreur système: {str(e)}",
-                'error_type': type(e).__name__
-            })
-    
-    # Formulaire simple
-    csrf_token = get_token(request)
-    html = f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Test Connexion Direct</title>
-        <style>
-            body {{ font-family: Arial, sans-serif; margin: 40px; max-width: 500px; }}
-            input {{ padding: 10px; width: 100%; margin: 10px 0; }}
-            button {{ padding: 10px 20px; background: #007cba; color: white; border: none; cursor: pointer; }}
-            .result {{ margin-top: 20px; padding: 15px; border-radius: 5px; }}
-            .success {{ background: #d4edda; color: #155724; }}
-            .error {{ background: #f8d7da; color: #721c24; }}
-        </style>
-    </head>
-    <body>
-        <h1>🔐 Test Connexion Direct</h1>
-        <p><strong>Email fixe:</strong> admin@pipou.blog</p>
-        
-        <form id="loginForm">
-            <input type="hidden" name="csrfmiddlewaretoken" value="{csrf_token}">
-            <label>Mot de passe:</label>
-            <input type="password" name="password" placeholder="Essayez: admin123, password, admin..." required>
-            <button type="submit">Tester</button>
-        </form>
-        
-        <div id="result"></div>
-        
-        <script>
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {{
-            e.preventDefault();
-            const formData = new FormData(this);
-            
-            try {{
-                const response = await fetch('/test-direct-login/', {{
-                    method: 'POST',
-                    body: formData,
-                    headers: {{
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-                    }}
-                }});
-                
-                const data = await response.json();
-                const resultDiv = document.getElementById('result');
-                
-                if (data.success) {{
-                    resultDiv.className = 'result success';
-                    resultDiv.innerHTML = '<h3>✅ ' + data.message + '</h3>';
-                    setTimeout(() => window.location.href = data.redirect_url, 2000);
-                }} else {{
-                    resultDiv.className = 'result error';
-                    let html = '<h3>❌ ' + data.error + '</h3>';
-                    if (data.user_info) html += '<p>' + JSON.stringify(data.user_info) + '</p>';
-                    if (data.password_hints) {{
-                        html += '<p><strong>Mots de passe à essayer:</strong> ' + data.password_hints.join(', ') + '</p>';
-                    }}
-                    if (data.all_emails) {{
-                        html += '<p><strong>Emails disponibles:</strong> ' + data.all_emails.join(', ') + '</p>';
-                    }}
-                    resultDiv.innerHTML = html;
-                }}
-            }} catch (error) {{
-                document.getElementById('result').innerHTML = '<div class="result error">Erreur réseau: ' + error.message + '</div>';
-            }}
-        }});
-        </script>
-    </body>
-    </html>
-    """
-    return HttpResponse(html)
-
-def test_manual_auth(request):
-    """Test de connexion manuelle sans utiliser authenticate()"""
-    from django.contrib.auth import login, get_user_model
-    from django.http import JsonResponse
-    
-    if request.method == 'POST':
-        try:
-            email = request.POST.get('email', 'admin@pipou.blog')
-            password = request.POST.get('password', '')
-            
-            User = get_user_model()
-            
-            # Étape 1: Trouver l'utilisateur par email
-            try:
-                user = User.objects.get(email=email)
-            except User.DoesNotExist:
-                # Lister tous les emails disponibles
-                all_emails = list(User.objects.values_list('email', flat=True))
-                return JsonResponse({
-                    'success': False,
-                    'error': f"Utilisateur avec email '{email}' non trouvé",
-                    'available_emails': all_emails,
-                    'total_users': User.objects.count()
-                })
-            
-            # Étape 2: Vérifier le mot de passe manuellement
-            if user.check_password(password):
-                # Étape 3: Connecter l'utilisateur manuellement
-                login(request, user)
-                return JsonResponse({
-                    'success': True,
-                    'message': f"✅ Connexion réussie ! Bienvenue {user.username}",
-                    'user_info': {
-                        'username': user.username,
-                        'email': user.email,
-                        'is_active': user.is_active,
-                        'is_superuser': user.is_superuser
-                    },
-                    'redirect_url': '/'
-                })
-            else:
-                return JsonResponse({
-                    'success': False,
-                    'error': "❌ Mot de passe incorrect",
-                    'user_info': {
-                        'username': user.username,
-                        'email': user.email,
-                        'is_active': user.is_active
-                    },
-                    'password_hints': [
-                        "admin123",
-                        "password", 
-                        "admin",
-                        "123456",
-                        "pipou123"
-                    ]
-                })
-                
-        except Exception as e:
-            return JsonResponse({
-                'success': False,
-                'error': f"❌ Erreur système: {str(e)}",
-                'error_type': type(e).__name__,
-                'debug': True
-            })
-    
-    # Interface simple
-    html = """
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Test Connexion Manuelle</title>
-        <style>
-            body { font-family: Arial, sans-serif; margin: 40px; max-width: 600px; }
-            .form-group { margin: 15px 0; }
-            label { display: block; margin-bottom: 5px; font-weight: bold; }
-            input { padding: 10px; width: 100%; border: 1px solid #ddd; border-radius: 4px; }
-            button { padding: 10px 20px; background: #007cba; color: white; border: none; border-radius: 4px; cursor: pointer; }
-            button:hover { background: #005a87; }
-            .result { margin-top: 20px; padding: 15px; border-radius: 5px; }
-            .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
-            .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-            .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
-        </style>
-    </head>
-    <body>
-        <h1>🔐 Test Connexion Manuelle</h1>
-        <p>Cette méthode contourne les backends d'authentification et teste directement.</p>
-        
-        <form id="loginForm">
-            <div class="form-group">
-                <label for="email">Email:</label>
-                <input type="email" id="email" name="email" value="admin@pipou.blog" required>
-            </div>
-            
-            <div class="form-group">
-                <label for="password">Mot de passe:</label>
-                <input type="password" id="password" name="password" placeholder="Essayez: admin123, password, admin..." required>
-            </div>
-            
-            <button type="submit">🚀 Tester la Connexion</button>
-        </form>
-        
-        <div id="result"></div>
-        
-        <script>
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const formData = new FormData(this);
-            const resultDiv = document.getElementById('result');
-            
-            // Afficher un indicateur de chargement
-            resultDiv.innerHTML = '<div class="info">⏳ Test en cours...</div>';
-            
-            try {
-                const response = await fetch('/test-manual-auth/', {
-                    method: 'POST',
-                    body: formData
-                });
-                
-                if (!response.ok) {
-                    throw new Error('Erreur HTTP: ' + response.status);
-                }
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    resultDiv.className = 'result success';
-                    resultDiv.innerHTML = 
-                        '<h3>' + data.message + '</h3>' +
-                        '<p><strong>Utilisateur:</strong> ' + data.user_info.username + '</p>' +
-                        '<p><strong>Email:</strong> ' + data.user_info.email + '</p>' +
-                        '<p><strong>Superuser:</strong> ' + (data.user_info.is_superuser ? 'Oui' : 'Non') + '</p>' +
-                        '<p>Redirection vers l\\'accueil dans 3 secondes...</p>';
-                    
-                    setTimeout(() => {
-                        window.location.href = data.redirect_url;
-                    }, 3000);
-                } else {
-                    resultDiv.className = 'result error';
-                    let html = '<h3>' + data.error + '</h3>';
-                    
-                    if (data.user_info) {
-                        html += '<div class="info">' +
-                                '<p><strong>Utilisateur trouvé:</strong> ' + data.user_info.username + '</p>' +
-                                '<p><strong>Email:</strong> ' + data.user_info.email + '</p>' +
-                                '<p><strong>Actif:</strong> ' + (data.user_info.is_active ? 'Oui' : 'Non') + '</p>' +
-                                '</div>';
-                    }
-                    
-                    if (data.password_hints) {
-                        html += '<p><strong>Mots de passe à essayer:</strong> ' + data.password_hints.join(', ') + '</p>';
-                    }
-                    
-                    if (data.available_emails) {
-                        html += '<p><strong>Emails disponibles (' + data.total_users + '):</strong><br>' + 
-                                data.available_emails.join('<br>') + '</p>';
-                    }
-                    
-                    resultDiv.innerHTML = html;
-                }
-                
-            } catch (error) {
-                resultDiv.className = 'result error';
-                resultDiv.innerHTML = '<h3>❌ Erreur de connexion</h3><p>' + error.message + '</p>';
-            }
-        });
-        </script>
-    </body>
-    </html>
-    """
-    return HttpResponse(html)
-
 urlpatterns = [
-    path('test-db/', test_db_connection, name='test_db'),
-    path('test-authenticate/', test_authenticate_direct, name='test_authenticate'),
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
     path('migrate/', run_migrations, name='migrate'),
@@ -1681,15 +1239,12 @@ urlpatterns = [
     path('debug-login/', debug_login, name='debug_login'),
     path('test-login-manual/', test_login_manual, name='test_login_manual'),
     path('show-emails/', show_user_emails, name='show_emails'),
-    path('test-auth-backends/', test_auth_backends, name='test_auth_backends'),
-    path('test-direct-login/', test_direct_login, name='test_direct_login'),
-    path('test-manual-auth/', test_manual_auth, name='test_manual_auth'),
     path('admin-login/', admin_custom_login, name='admin_custom_login'),
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
     path('admin-alt/', admin_alternative, name='admin_alt'),
-    path('', include('authentication.urls')),
     path('', include('blog.urls')),
     path('profile/', include('user_profile.urls')),
+    path('', include('authentication.urls')),
 ]
 
 if settings.DEBUG:

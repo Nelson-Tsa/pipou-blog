@@ -3,7 +3,7 @@ from .forms import EmailAuthenticationForm
 from django.conf import settings
 from django.contrib.auth import login
 from django.shortcuts import redirect, render
-from django.contrib import messages
+from django.http import HttpResponse # Import HttpResponse
 
 from . import forms
 
@@ -13,17 +13,7 @@ class CustomLoginView(LoginView):
     authentication_form = EmailAuthenticationForm
 
     def form_invalid(self, form):
-        print("Form is invalid (from views.py)")
-        print("Form errors:", form.errors)
-        print("Request POST data:", self.request.POST)
-        for field, errors in form.errors.items():
-            for error in errors:
-                if field == '__all__':
-                    messages.error(self.request, error)
-                else:
-                    messages.error(self.request, f"{field.capitalize()}: {error}")
-        return super().form_invalid(form)
-
+        return HttpResponse(f"Form Errors: {form.errors}") # Directly return errors
 
 def register_page(request):
     form = forms.RegisterForm()

@@ -4,32 +4,13 @@
 
     <section class="connexion-container">
         <h1>Se connecter</h1>
-        {% if messages %}
-            <ul class="messages">
-                {% for message in messages %}
-                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
-                {% endfor %}
-            </ul>
-        {% endif %}
-        
-        {# Fallback for direct form errors #}
-        {% if form.errors %}
-            <div class="error-direct">
-                <h3>Erreurs du formulaire:</h3>
-                <ul>
-                {% for field, errors in form.errors.items %}
-                    <li><strong>{{ field }}:</strong>
-                        <ul>
-                        {% for error in errors %}
-                            <li>{{ error }}</li>
-                        {% endfor %}
-                        </ul>
-                    </li>
-                {% endfor %}
-                </ul>
+        {% if form.non_field_errors %}
+            <div class="error non-field-errors">
+            {% for error in form.non_field_errors %}
+            <p>{{ error }}</p>
+            {% endfor %}
             </div>
         {% endif %}
-
         <form method="POST" class="connexion-form">
             {% csrf_token %}
             <div class="connexion_input">
