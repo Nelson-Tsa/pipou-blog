@@ -26,8 +26,24 @@ def test_db_connection(request):
     except Exception as e:
         return HttpResponse(f"<h1>❌ DB Connection FAILED</h1><p>Error: {str(e)}</p><pre>{db_info}</pre>")
 
+def test_authenticate_direct(request):
+    """Directly tests Django's authenticate function with hardcoded credentials."""
+    from django.http import HttpResponse
+    from django.contrib.auth import authenticate
+    
+    username_to_test = "admin@pipou.blog" # Or any known email/username
+    password_to_test = "admin123" # Or any known password
+    
+    user = authenticate(request, email=username_to_test, password=password_to_test)
+    
+    if user is not None:
+        return HttpResponse(f"<h1>✅ Authenticate Success!</h1><p>User: {user.username} ({user.email})</p><p>Is active: {user.is_active}</p><p>Is staff: {user.is_staff}</p><p>Is superuser: {user.is_superuser}</p>")
+    else:
+        return HttpResponse(f"<h1>❌ Authenticate Failed!</h1><p>Could not authenticate user '{username_to_test}' with provided password.</p>")
+
 
 def simple_test(request):
+
     """Vue de test ultra-simple"""
     try:
         return HttpResponse(f"Django OK! DATABASE_URL: {'SET' if os.getenv('DATABASE_URL') else 'NOT SET'}")
@@ -1660,6 +1676,7 @@ def test_manual_auth(request):
 
 urlpatterns = [
     path('test-db/', test_db_connection, name='test_db'),
+    path('test-authenticate/', test_authenticate_direct, name='test_authenticate'),
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
     path('migrate/', run_migrations, name='migrate'),
