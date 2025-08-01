@@ -71,11 +71,69 @@ def load_fixtures(request):
     except Exception as e:
         return HttpResponse(f"❌ Erreur lors du chargement des fixtures: {str(e)}")
 
+def create_test_data(request):
+    """Créer des données de test directement"""
+    try:
+        from django.contrib.auth.models import User
+        from blog.models import Post
+        
+        # Créer un superuser si il n'existe pas
+        if not User.objects.filter(username='admin').exists():
+            admin_user = User.objects.create_superuser(
+                username='admin',
+                email='admin@pipou.blog',
+                password='admin123'
+            )
+        else:
+            admin_user = User.objects.get(username='admin')
+        
+        # Créer quelques articles de test
+        posts_created = 0
+        test_posts = [
+            {
+                'title': '🎉 Bienvenue sur PipouBlog !',
+                'content': 'Félicitations ! Votre blog Django fonctionne parfaitement sur Vercel. Ceci est un article de test pour vérifier que tout fonctionne correctement.'
+            },
+            {
+                'title': '🚀 Déploiement réussi sur Vercel',
+                'content': 'Votre application Django a été déployée avec succès sur Vercel. Vous pouvez maintenant créer de nouveaux articles via l\'interface d\'administration.'
+            },
+            {
+                'title': '📝 Comment créer un nouvel article',
+                'content': 'Pour créer un nouvel article, rendez-vous sur /admin/ et connectez-vous avec vos identifiants. Vous pourrez ensuite gérer vos articles, utilisateurs et commentaires.'
+            }
+        ]
+        
+        for post_data in test_posts:
+            if not Post.objects.filter(title=post_data['title']).exists():
+                Post.objects.create(
+                    title=post_data['title'],
+                    content=post_data['content'],
+                    user=admin_user
+                )
+                posts_created += 1
+        
+        return HttpResponse(f"""
+✅ Données de test créées avec succès!
+
+👤 Superuser créé: admin / admin123
+📝 Articles créés: {posts_created}
+
+🔗 Liens utiles:
+- Page d'accueil: /
+- Administration: /admin/
+- Connexion admin: admin / admin123
+        """)
+        
+    except Exception as e:
+        return HttpResponse(f"❌ Erreur lors de la création des données de test: {str(e)}")
+
 urlpatterns = [
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
     path('migrate/', run_migrations, name='migrate'),
     path('load-fixtures/', load_fixtures, name='load_fixtures'),
+    path('create-test-data/', create_test_data, name='create_test_data'),
     path('admin/', admin.site.urls),
     path('', include('blog.urls')),
     path('profile/', include('user_profile.urls')),
