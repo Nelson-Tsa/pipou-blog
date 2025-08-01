@@ -85,58 +85,73 @@ def load_fixtures_safe(request):
             fixtures_data = json.load(f)
         
         results = []
+        user_id_mapping = {}  # Mapping ancien_id -> nouveau_user
         
+        # Première passe : créer les utilisateurs et construire le mapping
         for item in fixtures_data:
             model_name = item['model']
             
-            # Ignorer les ContentTypes et autres modèles système qui peuvent causer des conflits
-            if model_name in ['contenttypes.contenttype', 'admin.logentry', 'auth.permission']:
-                continue
+            if model_name == 'authentication.user':
+                fields = item['fields']
+                old_id = item['pk']
                 
-            # Traiter les utilisateurs
-            elif model_name == 'authentication.user':
-                fields = item['fields']
-                if not User.objects.filter(username=fields['username']).exists():
-                    user = User.objects.create_user(
-                        username=fields['username'],
-                        email=fields['email'],
-                        first_name=fields.get('first_name', ''),
-                        last_name=fields.get('last_name', ''),
-                    )
-                    if fields.get('is_staff'):
-                        user.is_staff = True
-                    if fields.get('is_superuser'):
-                        user.is_superuser = True
-                    user.save()
-                    results.append(f"✅ Utilisateur créé: {fields['username']}")
+                user, created = User.objects.get_or_create(
+                    username=fields['username'],
+                    defaults={
+                        'email': fields['email'],
+                        'first_name': fields.get('first_name', ''),
+                        'last_name': fields.get('last_name', ''),
+                        'is_staff': fields.get('is_staff', False),
+                        'is_superuser': fields.get('is_superuser', False),
+                    }
+                )
+                
+                # Ajouter au mapping
+                user_id_mapping[old_id] = user
+                
+                if created:
+                    results.append(f"✅ Utilisateur créé: {fields['username']} (ID: {old_id} -> {user.id})")
                 else:
-                    results.append(f"⚠️ Utilisateur existe déjà: {fields['username']}")
+                    results.append(f"⚠️ Utilisateur existe déjà: {fields['username']} (ID: {old_id} -> {user.id})")
+        
+        # Deuxième passe : créer les articles avec le bon mapping d'utilisateurs
+        for item in fixtures_data:
+            model_name = item['model']
             
-            # Traiter les posts
-            elif model_name == 'blog.post':
+            if model_name == 'blog.post':
                 fields = item['fields']
-                if not Post.objects.filter(title=fields['title']).exists():
-                    # Trouver l'utilisateur correspondant
-                    try:
-                        user = User.objects.get(pk=fields['user'])
-                        Post.objects.create(
-                            title=fields['title'],
-                            content=fields['content'],
-                            user=user,
-                            created_at=fields.get('created_at'),
-                            updated_at=fields.get('updated_at')
-                        )
-                        results.append(f"✅ Article créé: {fields['title']}")
-                    except User.DoesNotExist:
-                        results.append(f"❌ Utilisateur introuvable pour l'article: {fields['title']}")
+                old_user_id = fields['user']
+                
+                if old_user_id in user_id_mapping:
+                    user = user_id_mapping[old_user_id]
+                    
+                    post, created = Post.objects.get_or_create(
+                        title=fields['title'],
+                        defaults={
+                            'content': fields['content'],
+                            'user': user,
+                            'created_at': fields.get('created_at'),
+                            'updated_at': fields.get('updated_at')
+                        }
+                    )
+                    
+                    if created:
+                        results.append(f"✅ Article créé: {fields['title']} (par {user.username})")
+                    else:
+                        results.append(f"⚠️ Article existe déjà: {fields['title']}")
                 else:
-                    results.append(f"⚠️ Article existe déjà: {fields['title']}")
+                    results.append(f"❌ Utilisateur ID {old_user_id} introuvable pour l'article: {fields['title']}")
         
         return HttpResponse(f"""
 🎯 Chargement sécurisé des fixtures terminé!
 
 📊 Résultats:
 {chr(10).join(results)}
+
+📈 Statistiques:
+- Utilisateurs dans le mapping: {len(user_id_mapping)}
+- Total utilisateurs: {User.objects.count()}
+- Total articles: {Post.objects.count()}
 
 🔗 Liens utiles:
 - Page d'accueil: /
