@@ -152,6 +152,33 @@ STATICFILES_DIRS: {getattr(settings, 'STATICFILES_DIRS', 'Non défini')}
     except Exception as e:
         return HttpResponse(f"❌ Erreur: {str(e)}")
 
+def test_admin_access(request):
+    """Tester l'accès à l'admin sans CSS"""
+    try:
+        from django.contrib.admin.sites import site
+        from django.contrib.auth.models import User
+        
+        # Compter les utilisateurs
+        user_count = User.objects.count()
+        admin_urls = [name for name in site.urls[0].url_patterns]
+        
+        return HttpResponse(f"""
+🔧 Test d'accès à l'admin Django:
+
+👥 Utilisateurs dans la base: {user_count}
+🔗 URLs admin disponibles: {len(admin_urls)} routes
+
+📋 Pour accéder à l'admin:
+1. Allez sur /admin/
+2. Connectez-vous avec: admin / admin123
+3. Si les CSS ne se chargent pas, c'est normal pour l'instant
+
+⚠️ Si vous avez une erreur 500 sur /admin/, c'est probablement lié aux fichiers statiques.
+        """)
+        
+    except Exception as e:
+        return HttpResponse(f"❌ Erreur admin: {str(e)}")
+
 urlpatterns = [
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
@@ -159,6 +186,7 @@ urlpatterns = [
     path('load-fixtures/', load_fixtures, name='load_fixtures'),
     path('create-test-data/', create_test_data, name='create_test_data'),
     path('check-static/', check_static_files, name='check_static'),
+    path('test-admin/', test_admin_access, name='test_admin'),
     path('admin/', admin.site.urls),
     path('', include('blog.urls')),
     path('profile/', include('user_profile.urls')),
