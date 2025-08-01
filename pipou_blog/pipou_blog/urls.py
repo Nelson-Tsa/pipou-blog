@@ -374,6 +374,168 @@ def test_admin_redirect(request):
     
     return HttpResponse(info)
 
+def admin_custom_login(request):
+    """Page de connexion admin personnalisée qui évite les redirections infinies"""
+    from django.contrib.auth import authenticate, login
+    from django.contrib.auth.forms import AuthenticationForm
+    from django.shortcuts import redirect
+    
+    if request.method == 'POST':
+        form = AuthenticationForm(request, data=request.POST)
+        if form.is_valid():
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password')
+            user = authenticate(username=username, password=password)
+            if user is not None and user.is_staff:
+                login(request, user)
+                return redirect('/admin-dashboard/')  # Rediriger vers notre dashboard
+            else:
+                error_msg = "Utilisateur non autorisé ou identifiants incorrects"
+        else:
+            error_msg = "Formulaire invalide"
+    else:
+        form = AuthenticationForm()
+        error_msg = ""
+    
+    # Formulaire de connexion simple
+    html = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Connexion Admin - PipouBlog</title>
+        <style>
+            body {{ font-family: Arial, sans-serif; max-width: 400px; margin: 100px auto; padding: 20px; }}
+            .form-group {{ margin-bottom: 15px; }}
+            label {{ display: block; margin-bottom: 5px; font-weight: bold; }}
+            input[type="text"], input[type="password"] {{ width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; }}
+            button {{ background: #007cba; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer; }}
+            button:hover {{ background: #005a87; }}
+            .error {{ color: red; margin-bottom: 15px; }}
+            .title {{ text-align: center; color: #333; margin-bottom: 30px; }}
+        </style>
+    </head>
+    <body>
+        <h1 class="title">🔐 Admin PipouBlog</h1>
+        
+        {f'<div class="error">{error_msg}</div>' if error_msg else ''}
+        
+        <form method="post">
+            <div class="form-group">
+                <label for="username">Nom d'utilisateur:</label>
+                <input type="text" id="username" name="username" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="password">Mot de passe:</label>
+                <input type="password" id="password" name="password" required>
+            </div>
+            
+            <button type="submit">Se connecter</button>
+        </form>
+        
+        <p style="margin-top: 30px; text-align: center; color: #666;">
+            Identifiants par défaut: <strong>admin</strong> / <strong>admin123</strong>
+        </p>
+        
+        <p style="text-align: center;">
+            <a href="/simple-admin/">Interface simple</a> | 
+            <a href="/">Retour au site</a>
+        </p>
+    </body>
+    </html>
+    """
+    
+    return HttpResponse(html)
+
+def admin_dashboard(request):
+    """Dashboard admin personnalisé qui remplace l'admin Django"""
+    from django.contrib.auth.decorators import user_passes_test
+    
+    # Vérifier que l'utilisateur est connecté et est staff
+    if not request.user.is_authenticated or not request.user.is_staff:
+        return redirect('/admin-login/')
+    
+    try:
+        users_count = User.objects.count()
+        posts_count = Post.objects.count()
+        superusers_count = User.objects.filter(is_superuser=True).count()
+        
+        # Interface d'administration complète
+        html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Dashboard Admin - PipouBlog</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; margin: 0; padding: 20px; background: #f5f5f5; }}
+                .header {{ background: #007cba; color: white; padding: 20px; margin: -20px -20px 20px -20px; }}
+                .stats {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px; margin-bottom: 30px; }}
+                .stat-card {{ background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+                .stat-number {{ font-size: 2em; font-weight: bold; color: #007cba; }}
+                .actions {{ display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px; }}
+                .action-card {{ background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }}
+                .action-card h3 {{ margin-top: 0; color: #333; }}
+                .btn {{ display: inline-block; background: #007cba; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; margin: 5px 5px 5px 0; }}
+                .btn:hover {{ background: #005a87; }}
+                .btn-danger {{ background: #dc3545; }}
+                .btn-danger:hover {{ background: #c82333; }}
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>🚀 Dashboard Admin - PipouBlog</h1>
+                <p>Bienvenue, {request.user.username}!</p>
+            </div>
+            
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-number">{users_count}</div>
+                    <div>Utilisateurs</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{posts_count}</div>
+                    <div>Articles</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">{superusers_count}</div>
+                    <div>Administrateurs</div>
+                </div>
+            </div>
+            
+            <div class="actions">
+                <div class="action-card">
+                    <h3>👥 Gestion des utilisateurs</h3>
+                    <a href="/list-users/" class="btn">Voir tous les utilisateurs</a>
+                    <a href="/create-admin/" class="btn">Créer un admin</a>
+                </div>
+                
+                <div class="action-card">
+                    <h3>📝 Gestion des articles</h3>
+                    <a href="/list-posts/" class="btn">Voir tous les articles</a>
+                </div>
+                
+                <div class="action-card">
+                    <h3>🔧 Maintenance</h3>
+                    <a href="/migrate/" class="btn">Exécuter migrations</a>
+                    <a href="/load-fixtures-safe/" class="btn">Charger fixtures</a>
+                    <a href="/check-static/" class="btn">Vérifier statiques</a>
+                </div>
+                
+                <div class="action-card">
+                    <h3>🌐 Navigation</h3>
+                    <a href="/" class="btn">Voir le site</a>
+                    <a href="/admin/logout/" class="btn btn-danger">Se déconnecter</a>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        return HttpResponse(html)
+        
+    except Exception as e:
+        return HttpResponse(f"❌ Erreur: {str(e)}")
+
 urlpatterns = [
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
@@ -383,10 +545,15 @@ urlpatterns = [
     path('create-test-data/', create_test_data, name='create_test_data'),
     path('create-admin/', create_admin_user, name='create_admin'),
     path('simple-admin/', simple_admin_test, name='simple_admin'),
+    path('list-users/', list_users, name='list_users'),
+    path('list-posts/', list_posts, name='list_posts'),
     path('check-static/', check_static_files, name='check_static'),
     path('test-admin/', test_admin_access, name='test_admin'),
     path('test-redirect/', test_admin_redirect, name='test_redirect'),
-    path('admin/', admin.site.urls),  # Réactivé avec la nouvelle configuration
+    path('admin-alt/', admin_alternative, name='admin_alt'),
+    path('admin-login/', admin_custom_login, name='admin_custom_login'),
+    path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
+    # path('admin/', admin.site.urls),  # Désactivé temporairement
     path('', include('blog.urls')),
     path('profile/', include('user_profile.urls')),
     path('', include('authentication.urls')),

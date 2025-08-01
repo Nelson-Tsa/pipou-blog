@@ -201,25 +201,36 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = False  # Vercel gère déjà HTTPS
     USE_TZ = True
     
-    # Configuration pour les sessions et cookies
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
+    # Configuration pour les sessions et cookies - DÉSACTIVÉE pour tester
+    SESSION_COOKIE_SECURE = False  # Temporairement désactivé
+    CSRF_COOKIE_SECURE = False     # Temporairement désactivé
     
-    # Configuration spécifique pour Django Admin sur Vercel
-    FORCE_SCRIPT_NAME = None
-    LOGIN_URL = '/admin/login/'
-    LOGIN_REDIRECT_URL = '/admin/'
+    # SOLUTION POUR ADMIN DJANGO : Désactiver les redirections automatiques
+    LOGIN_URL = None  # Désactiver les redirections automatiques
+    LOGIN_REDIRECT_URL = None  # Désactiver les redirections après login
+    LOGOUT_REDIRECT_URL = None  # Désactiver les redirections après logout
     
-    # Headers de sécurité - configuration plus permissive pour Vercel
+    # Headers de sécurité - TOUS DÉSACTIVÉS pour tester
     SECURE_BROWSER_XSS_FILTER = False
     SECURE_CONTENT_TYPE_NOSNIFF = False
-    SECURE_HSTS_SECONDS = 0  # Désactiver HSTS qui peut causer des problèmes
+    SECURE_HSTS_SECONDS = 0
     SECURE_HSTS_INCLUDE_SUBDOMAINS = False
     SECURE_HSTS_PRELOAD = False
+    SECURE_REFERRER_POLICY = None
     
     # Configuration des domaines autorisés
-    ALLOWED_HOSTS = ['*']  # Déjà configuré mais on s'assure
+    ALLOWED_HOSTS = ['*']
     
     # Configuration pour éviter les problèmes de reverse proxy
     USE_X_FORWARDED_HOST = True
     USE_X_FORWARDED_PORT = True
+    
+    # Désactiver complètement les redirections de sécurité
+    SECURE_REDIRECT_EXEMPT = [r'^admin/.*']  # Exempter l'admin des redirections
+    
+    # Configuration spéciale pour éviter les boucles de redirection
+    APPEND_SLASH = False  # Désactiver l'ajout automatique de slash
+else:
+    # Configuration pour le développement local
+    LOGIN_URL = '/admin/login/'
+    LOGIN_REDIRECT_URL = '/admin/'
