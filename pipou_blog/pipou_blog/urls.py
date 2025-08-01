@@ -11,29 +11,13 @@ from django.conf.urls.static import static
 
 def simple_test(request):
     """Vue de test ultra-simple"""
-    return HttpResponse("Django fonctionne ! Variables: DATABASE_URL=" + 
-                       ("SET" if os.getenv('DATABASE_URL') else "NOT SET"))
-
-def debug_info(request):
-    """Vue de debug pour diagnostiquer les problèmes de configuration"""
     try:
-        debug_data = {
-            'status': 'Django is running!',
-            'environment_variables': {
-                'DATABASE_URL': 'SET' if os.getenv('DATABASE_URL') else 'NOT SET',
-                'SECRET_KEY': 'SET' if os.getenv('SECRET_KEY') else 'NOT SET',
-                'DEBUG': os.getenv('DEBUG', 'NOT SET'),
-            }
-        }
-        
-        from django.http import JsonResponse
-        return JsonResponse(debug_data, indent=2)
+        return HttpResponse(f"Django OK! DATABASE_URL: {'SET' if os.getenv('DATABASE_URL') else 'NOT SET'}")
     except Exception as e:
-        return HttpResponse(f"Erreur debug: {str(e)}")
+        return HttpResponse(f"Erreur: {str(e)}")
 
 urlpatterns = [
-    path('test/', simple_test, name='test'),  # Vue de test simple
-    path('debug/', debug_info, name='debug'),  # Vue de debug
+    path('test/', simple_test, name='test'),
     path('admin/', admin.site.urls),
     path('', include('blog.urls')),
     path('profile/', include('user_profile.urls')),
