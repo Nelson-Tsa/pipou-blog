@@ -1640,10 +1640,7 @@ def test_manual_auth(request):
     """
     return HttpResponse(html)
 
-from . import debug_view
-
 urlpatterns = [
-    path('debug-login-page/', debug_view.debug_login_view, name='debug_login_page'),
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
     path('migrate/', run_migrations, name='migrate'),
@@ -1667,9 +1664,9 @@ urlpatterns = [
     path('admin-login/', admin_custom_login, name='admin_custom_login'),
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
     path('admin-alt/', admin_alternative, name='admin_alt'),
+    path('', include('authentication.urls')),
     path('', include('blog.urls')),
     path('profile/', include('user_profile.urls')),
-    path('', include('authentication.urls')),
 ]
 
 if settings.DEBUG:
