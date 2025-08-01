@@ -1329,7 +1329,8 @@ def test_direct_login(request):
     """Test de connexion directe avec admin@pipou.blog"""
     from django.contrib.auth import authenticate, login, get_user_model
     from django.http import JsonResponse
-    
+    from django.middleware.csrf import get_token
+
     if request.method == 'POST':
         try:
             # Test avec admin@pipou.blog et différents mots de passe courants
@@ -1395,18 +1396,19 @@ def test_direct_login(request):
             })
     
     # Formulaire simple
-    html = """
+    csrf_token = get_token(request)
+    html = f"""
     <!DOCTYPE html>
     <html>
     <head>
         <title>Test Connexion Direct</title>
         <style>
-            body { font-family: Arial, sans-serif; margin: 40px; max-width: 500px; }
-            input { padding: 10px; width: 100%; margin: 10px 0; }
-            button { padding: 10px 20px; background: #007cba; color: white; border: none; cursor: pointer; }
-            .result { margin-top: 20px; padding: 15px; border-radius: 5px; }
-            .success { background: #d4edda; color: #155724; }
-            .error { background: #f8d7da; color: #721c24; }
+            body {{ font-family: Arial, sans-serif; margin: 40px; max-width: 500px; }}
+            input {{ padding: 10px; width: 100%; margin: 10px 0; }}
+            button {{ padding: 10px 20px; background: #007cba; color: white; border: none; cursor: pointer; }}
+            .result {{ margin-top: 20px; padding: 15px; border-radius: 5px; }}
+            .success {{ background: #d4edda; color: #155724; }}
+            .error {{ background: #f8d7da; color: #721c24; }}
         </style>
     </head>
     <body>
@@ -1414,6 +1416,7 @@ def test_direct_login(request):
         <p><strong>Email fixe:</strong> admin@pipou.blog</p>
         
         <form id="loginForm">
+            <input type="hidden" name="csrfmiddlewaretoken" value="{csrf_token}">
             <label>Mot de passe:</label>
             <input type="password" name="password" placeholder="Essayez: admin123, password, admin..." required>
             <button type="submit">Tester</button>
@@ -1422,42 +1425,42 @@ def test_direct_login(request):
         <div id="result"></div>
         
         <script>
-        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {{
             e.preventDefault();
             const formData = new FormData(this);
             
-            try {
-                const response = await fetch('/test-direct-login/', {
+            try {{
+                const response = await fetch('/test-direct-login/', {{
                     method: 'POST',
                     body: formData,
-                    headers: {
-                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
-                    }
-                });
+                    headers: {{
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }}
+                }});
                 
                 const data = await response.json();
                 const resultDiv = document.getElementById('result');
                 
-                if (data.success) {
+                if (data.success) {{
                     resultDiv.className = 'result success';
                     resultDiv.innerHTML = '<h3>✅ ' + data.message + '</h3>';
                     setTimeout(() => window.location.href = data.redirect_url, 2000);
-                } else {
+                }} else {{
                     resultDiv.className = 'result error';
                     let html = '<h3>❌ ' + data.error + '</h3>';
-                    if (data.user_info) html += '<p>' + data.user_info + '</p>';
-                    if (data.suggestions) {
-                        html += '<p><strong>Mots de passe à essayer:</strong> ' + data.suggestions.join(', ') + '</p>';
-                    }
-                    if (data.all_emails) {
+                    if (data.user_info) html += '<p>' + JSON.stringify(data.user_info) + '</p>';
+                    if (data.password_hints) {{
+                        html += '<p><strong>Mots de passe à essayer:</strong> ' + data.password_hints.join(', ') + '</p>';
+                    }}
+                    if (data.all_emails) {{
                         html += '<p><strong>Emails disponibles:</strong> ' + data.all_emails.join(', ') + '</p>';
-                    }
+                    }}
                     resultDiv.innerHTML = html;
-                }
-            } catch (error) {
+                }}
+            }} catch (error) {{
                 document.getElementById('result').innerHTML = '<div class="result error">Erreur réseau: ' + error.message + '</div>';
-            }
-        });
+            }}
+        }});
         </script>
     </body>
     </html>
@@ -1637,7 +1640,10 @@ def test_manual_auth(request):
     """
     return HttpResponse(html)
 
+from pipou_blog.debug_view import debug_login_view
+
 urlpatterns = [
+    path('debug-login-page/', debug_login_view, name='debug_login_page'),
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
     path('migrate/', run_migrations, name='migrate'),
