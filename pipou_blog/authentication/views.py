@@ -3,6 +3,7 @@ from .forms import EmailAuthenticationForm
 from django.conf import settings
 from django.contrib.auth import login
 from django.shortcuts import redirect, render
+from django.contrib import messages
 
 from . import forms
 
@@ -10,6 +11,15 @@ from . import forms
 class CustomLoginView(LoginView):
     template_name = 'authentication/login.html'
     authentication_form = EmailAuthenticationForm
+
+    def form_invalid(self, form):
+        for field, errors in form.errors.items():
+            for error in errors:
+                if field == '__all__':
+                    messages.error(self.request, error)
+                else:
+                    messages.error(self.request, f"{field.capitalize()}: {error}")
+        return super().form_invalid(form)
 
 
 def register_page(request):

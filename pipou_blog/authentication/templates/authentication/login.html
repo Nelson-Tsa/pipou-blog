@@ -4,10 +4,12 @@
 
     <section class="connexion-container">
         <h1>Se connecter</h1>
-        {% if message %}
-            <div class="error">
-                <p>{{ message }}</p>
-            </div>
+        {% if messages %}
+            <ul class="messages">
+                {% for message in messages %}
+                    <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                {% endfor %}
+            </ul>
         {% endif %}
         {% if form.non_field_errors %}
             <div class="error non-field-errors">
