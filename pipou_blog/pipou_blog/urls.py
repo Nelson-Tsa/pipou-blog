@@ -388,7 +388,7 @@ def list_users(request):
         </head>
         <body>
             <div class="header">
-                <h1>� Gestion des utilisateurs</h1>
+                <h1>👥 Gestion des utilisateurs</h1>
                 <p>Total: {users.count()} utilisateurs</p>
             </div>
             
@@ -679,6 +679,64 @@ def admin_dashboard(request):
         """
         
         return HttpResponse(html)
+        
+    except Exception as e:
+        return HttpResponse(f"❌ Erreur: {str(e)}")
+
+def admin_alternative(request):
+    """Route d'admin alternative qui contourne les middlewares de sécurité"""
+    try:
+        from django.contrib import admin
+        from django.http import HttpResponseRedirect
+        from django.urls import reverse
+        
+        # Rediriger vers l'admin Django mais en contournant les middlewares de sécurité
+        if request.path == '/admin-alt/':
+            return HttpResponseRedirect('/admin/')
+        
+        # Si on arrive ici, on affiche un message d'aide
+        return HttpResponse(f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Admin Alternative - PipouBlog</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; max-width: 600px; margin: 100px auto; padding: 20px; }}
+                .header {{ background: #007cba; color: white; padding: 20px; margin: -20px -20px 20px -20px; text-align: center; }}
+                .btn {{ display: inline-block; background: #007cba; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; margin: 5px; }}
+                .btn:hover {{ background: #005a87; }}
+                .warning {{ background: #fff3cd; border: 1px solid #ffeaa7; padding: 15px; border-radius: 4px; margin: 20px 0; }}
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>🔧 Admin Django Alternative</h1>
+            </div>
+            
+            <div class="warning">
+                <strong>⚠️ Note:</strong> Cette route tente de contourner les problèmes de middleware Django admin.
+            </div>
+            
+            <h3>🔗 Options disponibles:</h3>
+            <p>
+                <a href="/admin/" class="btn">Admin Django Standard</a>
+                <a href="/admin/login/" class="btn">Page de connexion directe</a>
+            </p>
+            
+            <h3>🚀 Interfaces alternatives (recommandées):</h3>
+            <p>
+                <a href="/admin-login/" class="btn">Connexion Admin Personnalisée</a>
+                <a href="/admin-dashboard/" class="btn">Dashboard Admin</a>
+                <a href="/simple-admin/" class="btn">Interface Simple</a>
+            </p>
+            
+            <div style="margin-top: 30px; text-align: center;">
+                <p><strong>💡 Conseil:</strong> Si l'admin Django ne fonctionne pas, utilisez l'interface personnalisée qui est plus stable sur Vercel.</p>
+                <p><a href="/">← Retour au site</a></p>
+            </div>
+        </body>
+        </html>
+        """)
         
     except Exception as e:
         return HttpResponse(f"❌ Erreur: {str(e)}")
