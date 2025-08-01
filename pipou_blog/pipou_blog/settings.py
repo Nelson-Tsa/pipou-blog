@@ -214,23 +214,9 @@ if not DEBUG:
     SECURE_SSL_REDIRECT = False  # Vercel gère déjà HTTPS
     USE_TZ = True
     
-    # Configuration pour les sessions et cookies - DÉSACTIVÉE pour tester
-    SESSION_COOKIE_SECURE = False  # Temporairement désactivé
-    CSRF_COOKIE_SECURE = False     # Temporairement désactivé
-    
-    # SOLUTION POUR ADMIN DJANGO : Désactiver les redirections automatiques ADMIN seulement
-    # Mais garder LOGIN_REDIRECT_URL pour que la connexion normale fonctionne
-    LOGIN_URL = '/authentication/login/'  # Garder pour la connexion normale
-    LOGIN_REDIRECT_URL = '/'  # Rediriger vers l'accueil après connexion
-    LOGOUT_REDIRECT_URL = '/authentication/login/'  # Rediriger vers login après déconnexion
-    
-    # Headers de sécurité - TOUS DÉSACTIVÉS pour tester
-    SECURE_BROWSER_XSS_FILTER = False
-    SECURE_CONTENT_TYPE_NOSNIFF = False
-    SECURE_HSTS_SECONDS = 0
-    SECURE_HSTS_INCLUDE_SUBDOMAINS = False
-    SECURE_HSTS_PRELOAD = False
-    SECURE_REFERRER_POLICY = None
+    # Configuration pour les sessions et cookies - RÉACTIVÉE
+    SESSION_COOKIE_SECURE = True  # Nécessaire pour HTTPS
+    CSRF_COOKIE_SECURE = True     # Nécessaire pour HTTPS
     
     # Configuration des domaines autorisés
     ALLOWED_HOSTS = ['*']
@@ -239,13 +225,6 @@ if not DEBUG:
     USE_X_FORWARDED_HOST = True
     USE_X_FORWARDED_PORT = True
     
-    # Désactiver complètement les redirections de sécurité
-    SECURE_REDIRECT_EXEMPT = [r'^admin/.*']  # Exempter l'admin des redirections
-    
-    # Configuration spéciale pour éviter les boucles de redirection
-    APPEND_SLASH = False  # Désactiver l'ajout automatique de slash
 else:
     # Configuration pour le développement local
-    LOGIN_URL = '/authentication/login/'
-    LOGIN_REDIRECT_URL = '/'
-    LOGOUT_REDIRECT_URL = '/authentication/login/'
+    pass  # Utiliser les configurations par défaut
