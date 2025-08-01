@@ -205,10 +205,11 @@ if not DEBUG:
     SESSION_COOKIE_SECURE = False  # Temporairement désactivé
     CSRF_COOKIE_SECURE = False     # Temporairement désactivé
     
-    # SOLUTION POUR ADMIN DJANGO : Désactiver les redirections automatiques
-    LOGIN_URL = None  # Désactiver les redirections automatiques
-    LOGIN_REDIRECT_URL = None  # Désactiver les redirections après login
-    LOGOUT_REDIRECT_URL = None  # Désactiver les redirections après logout
+    # SOLUTION POUR ADMIN DJANGO : Désactiver les redirections automatiques ADMIN seulement
+    # Mais garder LOGIN_REDIRECT_URL pour que la connexion normale fonctionne
+    LOGIN_URL = '/login/'  # Garder pour la connexion normale
+    LOGIN_REDIRECT_URL = '/'  # Rediriger vers l'accueil après connexion
+    LOGOUT_REDIRECT_URL = '/login/'  # Rediriger vers login après déconnexion
     
     # Headers de sécurité - TOUS DÉSACTIVÉS pour tester
     SECURE_BROWSER_XSS_FILTER = False
@@ -232,5 +233,6 @@ if not DEBUG:
     APPEND_SLASH = False  # Désactiver l'ajout automatique de slash
 else:
     # Configuration pour le développement local
-    LOGIN_URL = '/admin/login/'
-    LOGIN_REDIRECT_URL = '/admin/'
+    LOGIN_URL = '/login/'
+    LOGIN_REDIRECT_URL = '/'
+    LOGOUT_REDIRECT_URL = '/login/'

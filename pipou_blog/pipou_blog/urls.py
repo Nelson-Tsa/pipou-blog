@@ -741,6 +741,67 @@ def admin_alternative(request):
     except Exception as e:
         return HttpResponse(f"❌ Erreur: {str(e)}")
 
+def test_login_status(request):
+    """Tester le statut de connexion de l'utilisateur"""
+    try:
+        user_info = ""
+        if request.user.is_authenticated:
+            user_info = f"""
+            ✅ Utilisateur connecté: <strong>{request.user.username}</strong>
+            📧 Email: {request.user.email}
+            👤 Staff: {'✅' if request.user.is_staff else '❌'}
+            🔑 Superuser: {'✅' if request.user.is_superuser else '❌'}
+            """
+        else:
+            user_info = "❌ Aucun utilisateur connecté"
+        
+        return HttpResponse(f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>Test Connexion - PipouBlog</title>
+            <style>
+                body {{ font-family: Arial, sans-serif; max-width: 600px; margin: 50px auto; padding: 20px; }}
+                .header {{ background: #007cba; color: white; padding: 20px; margin: -20px -20px 20px -20px; text-align: center; }}
+                .status {{ background: #f8f9fa; border: 1px solid #dee2e6; padding: 20px; border-radius: 4px; margin: 20px 0; }}
+                .btn {{ display: inline-block; background: #007cba; color: white; padding: 10px 15px; text-decoration: none; border-radius: 4px; margin: 5px; }}
+                .btn:hover {{ background: #005a87; }}
+            </style>
+        </head>
+        <body>
+            <div class="header">
+                <h1>🔍 Test de Connexion</h1>
+            </div>
+            
+            <div class="status">
+                <h3>📊 Statut actuel:</h3>
+                {user_info}
+            </div>
+            
+            <h3>🔗 Actions disponibles:</h3>
+            <p>
+                <a href="/login/" class="btn">Connexion Blog</a>
+                <a href="/admin-login/" class="btn">Connexion Admin</a>
+                <a href="/logout/" class="btn">Déconnexion</a>
+            </p>
+            
+            <h3>🚀 Interfaces d'administration:</h3>
+            <p>
+                <a href="/admin-dashboard/" class="btn">Dashboard Admin</a>
+                <a href="/simple-admin/" class="btn">Interface Simple</a>
+                <a href="/create-admin/" class="btn">Créer Admin</a>
+            </p>
+            
+            <div style="margin-top: 30px; text-align: center;">
+                <p><a href="/">← Retour au site</a></p>
+            </div>
+        </body>
+        </html>
+        """)
+        
+    except Exception as e:
+        return HttpResponse(f"❌ Erreur: {str(e)}")
+
 urlpatterns = [
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
@@ -755,6 +816,7 @@ urlpatterns = [
     path('check-static/', check_static_files, name='check_static'),
     path('test-admin/', test_admin_access, name='test_admin'),
     path('test-redirect/', test_admin_redirect, name='test_redirect'),
+    path('test-login/', test_login_status, name='test_login'),
     path('admin-alt/', admin_alternative, name='admin_alt'),
     path('admin-login/', admin_custom_login, name='admin_custom_login'),
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
