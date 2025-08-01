@@ -6,10 +6,17 @@ echo "Building the project..."
 # Install dependencies
 pip3 install -r requirements.txt
 
-# Collect static files
+# Navigate to Django project directory
 cd pipou_blog
 
-# Set a dummy DATABASE_URL for collectstatic if not set
-export DATABASE_URL=${DATABASE_URL:-"postgresql://dummy:dummy@dummy:5432/dummy"}
+# Set environment variables for build
+export DJANGO_SETTINGS_MODULE=pipou_blog.settings
+export DEBUG=False
 
+# Use a dummy DATABASE_URL if not set (for collectstatic only)
+if [ -z "$DATABASE_URL" ]; then
+    export DATABASE_URL="postgresql://dummy:dummy@dummy:5432/dummy"
+fi
+
+# Collect static files (this doesn't need a real database connection)
 python3 manage.py collectstatic --noinput --clear
