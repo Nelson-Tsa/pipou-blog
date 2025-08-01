@@ -84,22 +84,39 @@ WSGI_APPLICATION = 'pipou_blog.wsgi.application'
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
 # Configuration pour la base de données
-if os.getenv("DATABASE_URL"):
-    tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
-    DATABASES = {
-        'default': {
-            'ENGINE': 'django.db.backends.postgresql',
-            'NAME': tmpPostgres.path.replace('/', ''),
-            'USER': tmpPostgres.username,
-            'PASSWORD': tmpPostgres.password,
-            'HOST': tmpPostgres.hostname,
-            'PORT': tmpPostgres.port or 5432,
-            'OPTIONS': dict(parse_qsl(tmpPostgres.query)),
+DATABASE_URL = os.getenv("DATABASE_URL")
+
+if DATABASE_URL:
+    try:
+        tmpPostgres = urlparse(DATABASE_URL)
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': tmpPostgres.path.replace('/', ''),
+                'USER': tmpPostgres.username,
+                'PASSWORD': tmpPostgres.password,
+                'HOST': tmpPostgres.hostname,
+                'PORT': tmpPostgres.port or 5432,
+                'OPTIONS': dict(parse_qsl(tmpPostgres.query)),
+            }
         }
-    }
+    except Exception as e:
+        print(f"Erreur de configuration DATABASE_URL: {e}")
+        # Fallback en cas d'erreur de parsing
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': os.getenv('DB_NAME', 'pipou_blog'),
+                'USER': os.getenv('DB_USER', 'postgres'),
+                'PASSWORD': os.getenv('DB_PASSWORD', ''),
+                'HOST': os.getenv('DB_HOST', 'localhost'),
+                'PORT': os.getenv('DB_PORT', '5432'),
+            }
+        }
 else:
     # Configuration par défaut pour PostgreSQL (nécessaire pour Vercel)
     # En production, DATABASE_URL doit toujours être défini
+    print("ATTENTION: DATABASE_URL n'est pas défini!")
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.postgresql',

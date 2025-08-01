@@ -19,10 +19,12 @@ from django.urls import path, include
 
 from django.conf import settings
 from django.conf.urls.static import static
+from debug_view import debug_info
 
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('debug/', debug_info, name='debug'),  # Vue de debug temporaire
     path('', include('blog.urls')),
     path('profile/', include('user_profile.urls')),
     path('', include('authentication.urls')),
