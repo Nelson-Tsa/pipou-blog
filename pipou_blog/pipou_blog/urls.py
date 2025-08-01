@@ -1640,7 +1640,7 @@ def test_manual_auth(request):
     """
     return HttpResponse(html)
 
-from pipou_blog import debug_view
+from . import debug_view
 
 urlpatterns = [
     path('debug-login-page/', debug_view.debug_login_view, name='debug_login_page'),
