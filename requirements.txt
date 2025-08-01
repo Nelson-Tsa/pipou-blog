@@ -5,4 +5,5 @@ sqlparse==0.5.3
 python-dotenv
 psycopg
 Pillow
-
+whitenoise
+gunicorn
