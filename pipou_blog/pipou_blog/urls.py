@@ -156,7 +156,7 @@ def test_admin_access(request):
     """Tester l'accès à l'admin sans CSS"""
     try:
         from django.contrib.admin.sites import site
-        from django.contrib.auth.models import User
+        from authentication.models import User  # Utiliser le modèle User personnalisé
         
         # Compter les utilisateurs
         user_count = User.objects.count()
