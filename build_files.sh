@@ -4,7 +4,8 @@
 echo "Building the project..."
 
 # Install dependencies
-pip install -r requirements.txt
+pip3 install -r requirements.txt
 
 # Collect static files
-python3.9 manage.py collectstatic --noinput --clear
+cd pipou_blog
+python3.11 manage.py collectstatic --noinput --clear
