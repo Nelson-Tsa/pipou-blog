@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<section class="post_detail-container">
+  <article class="detail-container">
+    <div class="detail-header">
+      <h2 class="detail-title">{{ post.title }}</h2>
+      <span class="detail-date"
+        >Publié le {{ post.created_at|date:"j F Y" }}</span
+      >
+    </div>
+    <div class="detail-content">
+      <p>{{ post.content|safe }}</p>
+    </div>
+    <div class="detail-author">
+      <p>Par <a class="link" href="{% url 'profile' post.user.id %}">{{ post.user.username }}</a></p>
+    </div>
+    <div class="detail-like-user">
+      <p>
+        {% if post.likes.count > 0 %}
+        <strong>{{ post.likes.count }}</strong> like{{ post.likes.count|pluralize }}
+        {% else %}
+        Aucun like
+        {% endif %}
+      </p>
+      <ul class="like-user-list">
+        {% for like in post.likes.all %}
+        <li>
+          {% if like.user.profile_picture %}
+          <img src="{{ like.user.profile_picture.url }}" alt="{{ like.user.username }}'s profile picture" class="like-user-avatar height="30" width="30">
+          {% else %}
+          <img src="{% static 'images/LOGO5.png' %}" alt="Default Avatar" class="like-user-avatar height="30" width="30">
+          {% endif %}
+          <span><a class="link" href="{% url 'profile' like.user.id %}">{{ like.user.username }}</a></span>
+        </li>
+        {% empty %}
+        <li>Aucun utilisateur n'a aimé ce post.</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </article>
+</section>
+{% endblock %}

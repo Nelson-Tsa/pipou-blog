@@ -1,0 +1,40 @@
+{% comment %}
+Template pour le widget ClearableFileInput personnalisé.
+Variables disponibles :
+- widget.initial_text: Texte pour le lien de l'image actuelle (ex: "Actuellement")
+- widget.input_text: Texte pour le label du bouton de changement (ex: "Modification")
+- widget.clear_checkbox_label: Texte pour le label de la case à cocher (ex: "Effacer")
+- widget.value: L'objet fichier/image actuel
+- widget.url: L'URL de l'image actuelle
+{% endcomment %}
+
+{% if widget.value %}
+    <!-- 1. Image actuelle et son lien -->
+    <div class="current-image-container">
+        <span class="current-image-label">{{ widget.initial_text }}:</span>
+        <a href="{{ widget.value.url }}" target="_blank">
+            <img src="{{ widget.value.url }}" alt="Photo de profil actuelle" width="50">
+        </a>
+    </div>
+
+    <!-- 2. Case à cocher pour effacer -->
+    <div class="clear-image-container">
+        <label for="{{ widget.checkbox_id }}">{{ widget.clear_checkbox_label }}</label>
+        <input 
+            type="checkbox" 
+            name="{{ widget.checkbox_name }}" 
+            id="{{ widget.checkbox_id }}"
+        > 
+    </div>
+{% endif %}
+
+<!-- 3. Bouton pour choisir un nouveau fichier -->
+<div class="new-image-container">
+    <label for="{{ widget.id_for_label }}">{{ widget.input_text }}:</label>
+    <input 
+        type="{{ widget.type }}" 
+        name="{{ widget.name }}" 
+        id="{{ widget.id_for_label }}"
+        {% include "django/forms/widgets/attrs.html" %}
+    >
+</div>

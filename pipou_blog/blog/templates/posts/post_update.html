@@ -1,0 +1,22 @@
+{% extends 'base.html' %} {% block content %}
+
+<section class="post_create-container">
+  <h1>Éditer l'article</h1>
+
+  <form method="POST" class="post_create-form">
+    {% csrf_token %}
+    <div class="post_input">
+      {{ form.title.label_tag }} {{ form.title }} {% if form.title.errors %}
+      <div class="error">{{ form.title.errors }}</div>
+      {% endif %}
+    </div>
+    <div class="post_textarea">
+      {{ form.content.label_tag }} {{ form.content }} {%if form.content.errors%}
+      <div class="error">{{ form.content.errors }}</div>
+      {% endif %}
+    </div>
+    <input type="submit" value="Éditer" class="submit_btn" />
+  </form>
+</section>
+
+{% endblock %}

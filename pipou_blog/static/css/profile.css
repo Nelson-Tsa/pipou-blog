@@ -1,0 +1,66 @@
+/* Styles pour la page de profil utilisateur */
+
+.profile-container {
+    max-width: 800px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: var(--background-color-white);
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    text-align: center;
+    cursor: pointer;
+}
+
+.profile-picture-container {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin: 0 auto 1.5rem auto;
+    border: 4px solid #fff;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+    padding: 20px;
+}
+
+.profile-picture-container img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+}
+
+.profile-container h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-color-black);
+}
+
+.profile-container p {
+    font-size: 1.1rem;
+    color: var(--text-color-detail-author);
+    line-height: 1.6;
+}
+
+.profile-actions {
+    margin-top: 2rem;
+}
+
+.profile-actions .btn {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    margin: 0 0.5rem;
+    border-radius: 5px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary {
+    background: var(--main-color);
+    color: var(--text-color-white);
+}
+
+.btn-primary:hover {
+    background: var(--main-color-hover);
+}
+

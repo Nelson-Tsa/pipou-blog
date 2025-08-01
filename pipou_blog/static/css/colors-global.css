@@ -1,0 +1,16 @@
+:root{
+    --main-color: #554e4e;
+    --main-color-hover: #686060;
+    --text-color-white: #fafafa;
+    --text-color-black:  #222;
+    --text-color-menu: #1f1e1e;
+    --text-color-detail-date : #888;
+    --text-color-detail-author : #666;
+    --background-menu: #b5acac;
+    --background-color-white: #fafafa;
+    --background-input: #fafbfc;
+    --background-remove-button: #b17070;
+    --background-remove-button-hover:  #7b4848;
+    --text-color-menu-hover:#e3e3e3;
+    --background-like-hover:#f5f5f5;
+}

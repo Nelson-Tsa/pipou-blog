@@ -1,0 +1,46 @@
+name: Django CI
+
+on:
+  push:
+    branches: ["dev", "main", "feature/Test"]
+  pull_request:
+    branches: ["dev", "main", "feature/Test"]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      max-parallel: 4
+      matrix:
+        python-version: [3.13]
+
+    # Nous n'avons plus besoin du service PostgreSQL local car nous utilisons Neon
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+          pip install coverage
+
+      - name: Run Tests with Coverage
+        env:
+          # Utilise le secret DATABASE_URL s'il existe, sinon une chaîne vide
+          DATABASE_URL: ${{ secrets.DATABASE_URL || '' }}
+        run: |
+          cd pipou_blog
+          coverage run manage.py test --settings=pipou_blog.test_settings --keepdb
+          coverage xml -o ../coverage.xml
+          coverage report -m
+
+      - name: Upload coverage report as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-${{ matrix.python-version }}
+          path: coverage.xml

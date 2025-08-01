@@ -1,0 +1,19 @@
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-top: 30px; /* Ajustez cette valeur si la hauteur du header change */
+  color: var(--text-color-black) 
+}
+
+main{
+  margin-top: 140px;
+  margin-bottom: 80px; 
+  flex: 1;
+}

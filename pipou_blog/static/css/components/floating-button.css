@@ -1,0 +1,62 @@
+/* Bouton flottant pour créer un nouveau post - Image directe */
+.floating-create-button {
+    position: fixed;
+    bottom: 30px;
+    right: 30px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+    transition: all 0.3s ease;
+    z-index: 1000;
+    cursor: pointer;
+    overflow: hidden;
+    animation: fadeInUp 0.5s ease-out;
+    margin-bottom: 3.5rem; /* Espace pour le footer */
+}
+
+.floating-create-button:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 20px rgba(0, 123, 255, 0.4);
+}
+
+/* L'image EST le bouton */
+.floating-create-button img {
+    width: 280%; /* Augmenter légèrement pour éliminer la dernière bordure */
+    height: 280%;
+    object-fit: cover;
+    border-radius: 50%;
+    display: block;
+    transition: transform 0.3s ease;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%); /* Centrer l'image agrandie */
+}
+
+.floating-create-button:hover img {
+    transform: translate(-50%, -50%) rotate(5deg); /* Garder le centrage + rotation */
+}
+
+/* Animation d'apparition */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .floating-create-button {
+        bottom: 20px;
+        right: 20px;
+        width: 50px;
+        height: 50px;
+        margin-bottom: 14rem;
+    }
+}

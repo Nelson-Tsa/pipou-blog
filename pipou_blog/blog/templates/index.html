@@ -1,0 +1,31 @@
+{% extends "base.html" %} {% block content %}
+<section class="post_view-container">
+  <div class="post_view-content">
+    {% for post in posts %}
+      <article class="post_container" data-href="/blog/{{ post.id }}">
+        <div class="post_header">
+          <h2>{{ post.title }}</h2>
+          <p>Publié le {{ post.created_at|date:"j F Y" }}</p>
+        </div>
+        <p>{{ post.content|safe|truncatewords:20 }}</p>
+        <p><a class="link" href="{% url 'profile' post.user.id %}">{{ post.user.username }}</a></p>
+
+      <!-- Section des likes -->
+      <div class="post_actions">
+        {% if user.is_authenticated %}
+          <button class="like-btn" data-post-id="{{ post.id }}" data-liked="false">
+            <span class="like-icon">🤍</span>
+            <span class="like-count">{{ post.get_likes_count }}</span>
+          </button>
+        {% else %}
+          <span class="like-display">
+            <span class="like-icon">🤍</span>
+            <span class="like-co  unt">{{ post.get_likes_count }}</span>
+          </span>
+        {% endif %}
+      </div>
+    </article>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

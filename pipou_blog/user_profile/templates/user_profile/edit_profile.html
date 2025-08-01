@@ -1,0 +1,76 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<div class="profil-update-container">
+    <h2>Modifier le profil</h2>
+    <form method="post" enctype="multipart/form-data" class="profil-update-form">
+        {% csrf_token %}
+        <div class="profil_input">
+            {{ form.username.label_tag }}
+            {{ form.username }}
+            {% if form.username.errors %}
+                <div class="error">{{ form.username.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="profil_input">
+            {{ form.first_name.label_tag }}
+            {{ form.first_name }}
+            {% if form.first_name.errors %}
+                <div class="error">{{ form.first_name.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="profil_input">
+            {{ form.last_name.label_tag }}
+            {{ form.last_name }}
+            {% if form.last_name.errors %}
+                <div class="error">{{ form.last_name.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="profil_input">
+            {{ form.email.label_tag }}
+            {{ form.email }}
+            {% if form.email.errors %}
+                <div class="error">{{ form.email.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="profil_textarea">
+            {{ form.biography.label_tag }}
+            {{ form.biography }}
+            {% if form.biography.errors %}
+                <div class="error">{{ form.biography.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="profil_input">  
+ 
+            <!-- 1. Récupérer UNIQUEMENT le label (le titre) -->
+            <label for="{{ form.profile_picture.id_for_label }}" class="title_profile_picture">
+               {{ form.profile_picture.label }}:
+             </label>
+   
+            <!-- 2. Afficher le widget du champ (l'input file, l'image actuelle, etc.) -->
+            <div class="profile-picture-widget">
+               {{ form.profile_picture }}
+           </div>
+
+           <!-- 3. Afficher le texte d'aide (s'il y en a) -->
+           {% if form.profile_picture.help_text %}
+               <small class="form-text text-muted">{{ form.profile_picture.help_text }}</small>
+           {% endif %}
+   
+           <!-- 4. Afficher les erreurs pour ce champ (s'il y en a) -->
+            {% for error in form.profile_picture.errors %}
+                <div class="alert alert-danger">{{ error }}</div>
+           {% endfor %}
+        </div>
+        <button type="submit" class="submit_btn">Enregistrer les modifications</button>
+        
+    </form>
+    <div class="delete-account-container">
+        <form method="post" action="{% url 'delete_account' %}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer votre compte ? Cette action est irréversible.');">
+            {% csrf_token %}
+            <button type="submit" class="btn-remove-account">Supprimer le compte</button>
+        </form>
+    </div>
+    
+</div>
+{% endblock %}

@@ -1,0 +1,8 @@
+asgiref==3.9.1
+Django==5.2.4
+coverage==7.10.1
+sqlparse==0.5.3
+python-dotenv
+psycopg
+Pillow
+

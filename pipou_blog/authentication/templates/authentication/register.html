@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<section class="connexion-container">
+    <h1>Inscription</h1>
+
+    <form method="POST" class="connexion-form">
+        {% csrf_token %}
+        <div class="connexion_input">
+            {{ form.username.label}} {{ form.username }} 
+            {{ form.username.help_text }}
+            {% if form.username.errors %}
+            <div class="error">{{ form.username.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="connexion_input">
+            {{ form.email.label }} {{ form.email }} 
+            {% if form.email.errors %}
+            <div class="error">{{ form.email.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="connexion_input">
+            {{ form.first_name.label }} {{ form.first_name }} 
+            {% if form.first_name.errors %}
+            <div class="error">{{ form.first_name.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="connexion_input">
+            {{ form.last_name.label }} {{ form.last_name }} 
+            {% if form.last_name.errors %}
+            <div class="error">{{ form.last_name.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="connexion_input">
+            {{ form.password1.label }} {{ form.password1 }}
+            {{ form.password1.help_text }} 
+            {% if form.password1.errors %}
+            <div class="error">{{ form.password1.errors }}</div>
+            {% endif %}
+        </div>
+        <div class="connexion_input">
+            {{ form.password2.label }} {{ form.password2 }} 
+            {% if form.password2.errors %}
+            <div class="error">{{ form.password2.errors }}</div>
+            {% endif %}
+        </div>
+        <input type="submit" value="S'inscrire" class="submit_btn" />
+    </form>
+</section>
+
+{% endblock content %}

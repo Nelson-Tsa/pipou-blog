@@ -1,0 +1,42 @@
+{% load static %}
+
+<header class="site-header">
+  <div class="container">
+    <div class="logo">
+      <a href="/"><img src="{% static 'images/LOGO7.png' %}" alt="LogoPipou" width="80" height="80" /></a>
+    </div>
+    <h1 class="tag-line">Pas de pipeau, que du pipou!</h1>
+    <!-- Menu Burger Icon -->
+    <div class="burger-menu">
+      <div class="burger-icon">
+        <span></span>
+        <span></span>
+        <span></span>
+      </div>
+
+      <!-- Navigation -->
+      <nav class="main-nav">
+        <ul>
+          <li><a href="/" alt="Accueil">Accueil</a></li>
+          {% if user.is_authenticated %}
+          <li><a href="/blog/create/">Nouvel Article</a></li>
+          <li><a href="{% url 'profile' user.id %}">Profil</a></li>
+          <li>
+            <form
+              action="{% url 'logout' %}"
+              method="post"
+              style="display: inline"
+            >
+              {% csrf_token %}
+              <button type="submit" class="logout-button"> Déconnexion </button>
+            </form>
+          </li>
+          {% else %}
+          <li><a href="{% url 'login' %}">Connexion</a></li>
+          <li><a href="{% url 'register' %}">Inscription</a></li>
+          {% endif %}
+        </ul>
+      </nav>
+    </div>
+  </div>
+</header>

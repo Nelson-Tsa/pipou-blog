@@ -1,0 +1,172 @@
+@import url('https://fonts.googleapis.com/css2?family=Special+Gothic+Expanded+One&display=swap');
+
+header {
+  background-color: var(--main-color);
+  color: var(--text-color-white);
+  padding: 1rem;
+}
+
+.site-header {
+  width: 100%;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  padding-left: 10px;
+}
+
+.container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 96%;
+  margin: 0;
+}
+
+/* Logo styles */
+.logo a {
+  color: var(--text-color-white);
+  font-size: 1.5rem;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+/* Tagline style */
+
+.tag-line{
+  color:var(--text-color-white);
+  font-family: "Special Gothic Expanded One";
+  font-weight: 300;
+  font-size: 1.3rem ;
+}
+/* Navigation styles */
+
+.main-nav {
+  position: absolute; /* Changement de fixed à absolute */
+  top: -25%; /* Positionnement en dessous du bouton */
+  right: 0; /* Alignement à droite */
+  height: auto; /* Hauteur automatique au lieu de 100vh */
+  max-height: 80vh; /* Hauteur maximale */
+  overflow-y: auto; /* Défilement si nécessaire */
+  background-color: var(--background-menu);
+  z-index: 100;
+  transform: scaleY(0); /* Caché par défaut */
+  transform-origin: top right; /* Animation à partir du coin supérieur droit */
+  transition: transform 0.3s ease; /* Animation de transformation au lieu de right */
+  box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+  border-radius: 5px;
+}
+
+.main-nav.active {
+  transform: scaleY(1); /* Visible quand actif */
+  right: 0; /* Pour s'assurer qu'il reste aligné */
+}
+
+.main-nav ul {
+  display: flex;
+  flex-direction: column;
+  list-style: none;
+  margin: 0;
+  margin-top: 20px;
+  padding: 10px 0;
+}
+
+.main-nav li {
+  margin: 0;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.main-nav li:last-child {
+  border-bottom: none;
+}
+
+.main-nav a {
+  color: var(--text-color-menu);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.3s;
+  padding: 10px 15px;
+  display: block;
+}
+
+.main-nav a:hover,
+ .logout-button:hover {
+  color: var(--text-color-menu-hover);
+}
+
+.burger-menu {
+  display: block;
+  z-index: 101;
+  position: relative;
+}
+
+.burger-icon {
+  z-index: 102;
+  width: 30px;
+  height: 20px;
+  position: relative;
+}
+
+.burger-icon span {
+  display: block;
+  position: absolute;
+  height: 3px;
+  width: 100%;
+  background: var(--text-color-white);
+  border-radius: 3px;
+  opacity: 1;
+  left: 0;
+  transform: rotate(0deg);
+  transition: 0.25s ease-in-out;
+}
+
+.burger-icon span:nth-child(1) {
+  top: 0px;
+}
+
+.burger-icon span:nth-child(2) {
+  top: 8px;
+}
+
+.burger-icon span:nth-child(3) {
+  top: 16px;
+}
+
+/* Active burger icon */
+
+.burger-menu.active .burger-icon span:nth-child(1) {
+  top: 8px;
+  transform: rotate(45deg);
+}
+
+.burger-menu.active .burger-icon span:nth-child(2) {
+  opacity: 0;
+}
+
+.burger-menu.active .burger-icon span:nth-child(3) {
+  top: 8px;
+  transform: rotate(-45deg);
+}
+
+
+.logout-button{
+  background: none;
+  border: none;
+  padding: 0;
+  margin: 0;
+  font: inherit;
+  color:var(--text-color-menu);
+  cursor: pointer;
+  padding: 10px;
+}
+
+/* .logout-button:hover {
+  color: #e3e3e3;
+}*/
+
+@media screen and (max-width: 768px) {
+  .tag-line {
+    font-size: 1rem;
+  }
+  
+}

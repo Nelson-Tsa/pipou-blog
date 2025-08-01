@@ -1,0 +1,116 @@
+.post_create-container,
+.connexion-container,
+.profil-update-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.5rem;
+  padding: 1.5rem 1rem;
+  min-height: 100vh;
+}
+
+.post_create-form,
+.connexion-form,
+.profil-update-form {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 1.25rem;
+  width: 100%;
+  max-width: 500px;
+  padding: 1.5rem 1rem;
+  background: var(--background-color-white);
+  border-radius: 1rem;
+  box-shadow: 0 4px 16px 0 rgba(100, 100, 111, 0.12);
+}
+
+.post_input,
+.post_textarea,
+.connexion_input,
+.connexion_textarea,
+.profil_input,
+.profil_textarea {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.post_input label,
+.post_textarea label,
+.connexion_input label,
+.connexion_textarea label,
+.profil_input label,
+.profil_textarea label {
+  font-weight: 500;
+  font-size: 1rem;
+  color: var(--text-color-black);
+}
+
+.post_input input,
+.post_textarea textarea,
+.connexion_input input,
+.connexion_textarea textarea,
+.profil_input input,
+.profil_textarea textarea {
+  padding: 0.5rem 0.75rem;
+  border: 1px solid #ddd;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-family: sans-serif;
+  resize: vertical;
+  background: var(--background-input);
+  transition: border-color 0.2s;
+}
+
+.post_input input:focus,
+.post_textarea textarea:focus,
+.connexion_input input:focus,
+.connexion_textarea textarea:focus,
+.profil_input input:focus,
+.profil_textarea textarea:focus {
+  border-color: #554e4e;
+  outline: none;
+}
+
+.post_create-form .submit_btn,
+.connexion-form .submit_btn,
+.profil_create-form .submit_btn {
+  display: flex;
+  justify-content: flex-start;
+}
+
+.post_create-form .submit_btn input,
+.post_create-form input[type="submit"],
+.connexion-form .submit_btn input,
+.connexion-form input[type="submit"],
+.submit_btn, .new-image-container input[type="file"] {
+  padding: 0.6rem 1.2rem;
+  background: var(--main-color);
+  color: var(--text-color-white);
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 1rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.post_create-form .submit_btn input:hover,
+.post_create-form input[type="submit"]:hover,
+.connexion-form .submit_btn input:hover,
+.connexion-form input[type="submit"]:hover,
+.submit_btn:hover, .new-image-container input[type="file"]:hover {
+  background: var(--main-color-hover);
+}
+
+
+@media (max-width: 600px) {
+  .post_create-form,
+  .connexion-form,
+  .profil_create-form  {
+    padding: 1rem 0.5rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 2px 8px 0 rgba(100, 100, 111, 0.1);
+    width: 100%;
+  }
+}

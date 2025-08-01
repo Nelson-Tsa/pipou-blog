@@ -1,0 +1,52 @@
+.delete-account-container {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+}
+
+.btn-remove-account{
+  padding: 0.6rem ;
+  background: var(--background-remove-button);
+  color: var(--text-color-white);
+  border: none;
+  border-radius: 0.5rem;
+  font-size: 0.8rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 8rem;
+}
+
+.btn-remove-account:hover{
+  background: var(--background-remove-button-hover);
+}
+
+.title_profile_picture{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.current-image-container{
+  margin-bottom: 1rem;
+}
+
+.current-image-label{
+  margin-right: 0.5rem;
+}
+
+.clear-image-container{
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.new-image-container{
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+

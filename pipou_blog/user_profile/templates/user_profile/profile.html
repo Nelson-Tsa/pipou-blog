@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<div class="profile-container">
+     <div class="profile-picture-container">
+        {% if user_profile.profile_picture %}
+            <img src="{{ user_profile.profile_picture.url }}" alt="Photo de profil" class="profile-picture">
+        {% else %}
+            <img src="{% static 'images/LOGO5.png' %}" alt="Photo de profil" class="profile-picture">
+        {% endif %}
+    </div>
+
+    <h1>{{ user_profile.username|default:user_profile.email }}</h1>
+
+    <p><strong>Email :</strong> {{ user_profile.email }}</p>
+    <p><strong>Nom :</strong> {{ user_profile.first_name|default:"Non renseigné" }}</p>
+    <p><strong>Prénom :</strong> {{ user_profile.last_name|default:"Non renseigné" }}</p>
+    <p><strong>Biographie :</strong> {{ user_profile.biography|default:"Aucune biographie." }}</p>
+    <p><small>Membre depuis le {{ user_profile.date_joined|date:"d F Y" }}</small></p>
+
+    {% if user == user_profile %}
+    <div class="profile-actions">
+                <a href="{% url 'edit_profile' %}" class="btn btn-primary">Modifier le profil</a>
+    </div>
+    {% endif %}
+</div>
+<section class="post_view-container">
+  <div class="post_view-content">
+    {% if user_posts %} {% for post in user_posts %}
+      <article class="post_container" data-href="/blog/{{ post.id }}">
+        <div class="post_header">
+          <h2>{{ post.title }}</h2>
+          <p>Publié le {{ post.created_at|date:"j F Y" }}</p>
+        </div>
+        <p>{{ post.content|safe|truncatewords:20 }}</p>
+        <div class="post_content">
+          <p>{{ post.user.username }}</p>
+          {% if user == user_profile %}
+            <div class="post_icons">
+              <a href="/blog/edit/{{ post.id }}">
+                <img class="update" src="{% static 'images/icons/update.svg' %}" alt="update icon" width="24">
+              </a>
+              <form method="POST" action="/blog/delete/{{ post.id }}" style="display:inline;" class="delete-form">
+                {% csrf_token %}
+                <button class="submit-btn-trash" type="submit" title="Supprimer">
+                  <img class="trash" src="{% static 'images/icons/trash.svg' %}" alt="trash icon" width="24">
+                </button>
+              </form>
+            </div>
+            {% endif %}
+        </div>
+           <!-- Section des likes -->
+        <div class="post_actions">
+          {% if user.is_authenticated %}
+            <button class="like-btn" data-post-id="{{ post.id }}" data-liked="false">
+              <span class="like-icon">🤍</span>
+              <span class="like-count">{{ post.get_likes_count }}</span>
+            </button>
+          {% else %}
+            <span class="like-display">
+              <span class="like-icon">🤍</span>
+              <span class="like-count">{{ post.get_likes_count }}</span>
+            </span>
+          {% endif %}
+        </div>
+      </article>
+    {% endfor %} {% else %}
+    <p>Aucun post pour cet utilisateur.</p>
+    {% endif %}
+  </div>
+</section>
+{% endblock %}
+

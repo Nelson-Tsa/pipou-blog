@@ -1,0 +1,90 @@
+/* Styles pour les likes */
+.post_actions {
+  display: flex;
+  align-items: center;
+  margin-top: 15px;
+  padding-top: 10px;
+  border-top: 1px solid #e0e0e0;
+}
+
+.like-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  border-radius: 20px;
+  transition: all 0.3s ease;
+  font-size: 14px;
+}
+
+.like-btn:hover {
+  background-color: var(--background-like-hover);
+  transform: scale(1.05);
+}
+
+.like-btn:active {
+  transform: scale(0.95);
+}
+
+.like-display {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 8px 12px;
+  color: #666;
+  font-size: 14px;
+}
+
+.like-icon {
+  font-size: 18px;
+  transition: all 0.2s ease;
+}
+
+.like-count {
+  font-weight: 500;
+  color: #333;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* Animation pour le like */
+.like-btn[data-liked="true"] .like-icon {
+  animation: heartbeat 0.6s ease-in-out;
+}
+
+@keyframes heartbeat {
+  0% {
+    transform: scale(1);
+  }
+  25% {
+    transform: scale(1.2);
+  }
+  50% {
+    transform: scale(1);
+  }
+  75% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .post_actions {
+    margin-top: 10px;
+  }
+  
+  .like-btn, .like-display {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+  
+  .like-icon {
+    font-size: 16px;
+  }
+}
