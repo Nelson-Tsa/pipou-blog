@@ -50,10 +50,32 @@ def run_migrations(request):
     except Exception as e:
         return HttpResponse(f"❌ Erreur lors des migrations: {str(e)}")
 
+def load_fixtures(request):
+    """Charger les fixtures Django via le web"""
+    try:
+        from django.core.management import execute_from_command_line
+        import io
+        import sys
+        
+        # Capturer la sortie
+        old_stdout = sys.stdout
+        sys.stdout = captured_output = io.StringIO()
+        
+        try:
+            execute_from_command_line(['manage.py', 'loaddata', 'fixtures/all_data.json'])
+            output = captured_output.getvalue()
+            return HttpResponse(f"✅ Fixtures chargées avec succès!\n\n{output}")
+        finally:
+            sys.stdout = old_stdout
+            
+    except Exception as e:
+        return HttpResponse(f"❌ Erreur lors du chargement des fixtures: {str(e)}")
+
 urlpatterns = [
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
     path('migrate/', run_migrations, name='migrate'),
+    path('load-fixtures/', load_fixtures, name='load_fixtures'),
     path('admin/', admin.site.urls),
     path('', include('blog.urls')),
     path('profile/', include('user_profile.urls')),
