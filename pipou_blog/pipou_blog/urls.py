@@ -913,6 +913,128 @@ def debug_login(request):
     except Exception as e:
         return HttpResponse(f"❌ Erreur de diagnostic: {str(e)}")
 
+def test_login_manual(request):
+    """Test de connexion manuelle pour diagnostiquer les problèmes"""
+    from django.contrib.auth import authenticate, login, get_user_model
+    from django.http import JsonResponse
+    
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        
+        # Test 1: Vérifier si l'utilisateur existe
+        User = get_user_model()
+        try:
+            user_exists = User.objects.get(email=email)
+            user_info = f"✅ Utilisateur trouvé: {user_exists.username} ({user_exists.email})"
+        except User.DoesNotExist:
+            return JsonResponse({
+                'success': False,
+                'error': f"❌ Aucun utilisateur trouvé avec l'email: {email}",
+                'users_list': list(User.objects.all().values_list('email', 'username'))
+            })
+        
+        # Test 2: Tester l'authentification
+        user = authenticate(request, email=email, password=password)
+        if user:
+            login(request, user)
+            return JsonResponse({
+                'success': True,
+                'message': f"✅ Connexion réussie pour {user.username}",
+                'user_info': user_info,
+                'redirect_url': '/'
+            })
+        else:
+            # Test 3: Vérifier le mot de passe manuellement
+            password_check = user_exists.check_password(password)
+            return JsonResponse({
+                'success': False,
+                'error': f"❌ Échec de l'authentification",
+                'user_info': user_info,
+                'password_valid': password_check,
+                'debug_info': {
+                    'email_provided': email,
+                    'password_provided': bool(password),
+                    'user_active': user_exists.is_active,
+                    'backends': settings.AUTHENTICATION_BACKENDS if hasattr(settings, 'AUTHENTICATION_BACKENDS') else 'Non configuré'
+                }
+            })
+    
+    # Formulaire de test
+    html = """
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Test de Connexion</title>
+        <style>
+            body { font-family: Arial; margin: 40px; }
+            .form-group { margin: 15px 0; }
+            input { padding: 10px; width: 300px; }
+            button { padding: 10px 20px; background: #007cba; color: white; border: none; cursor: pointer; }
+            .result { margin-top: 20px; padding: 15px; border-radius: 5px; }
+            .success { background: #d4edda; color: #155724; }
+            .error { background: #f8d7da; color: #721c24; }
+        </style>
+    </head>
+    <body>
+        <h1>🔍 Test de Connexion - Diagnostic</h1>
+        <form id="loginForm">
+            <div class="form-group">
+                <label>Email:</label><br>
+                <input type="email" name="email" required>
+            </div>
+            <div class="form-group">
+                <label>Mot de passe:</label><br>
+                <input type="password" name="password" required>
+            </div>
+            <button type="submit">Tester la Connexion</button>
+        </form>
+        <div id="result"></div>
+        
+        <script>
+        document.getElementById('loginForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch('/test-login-manual/', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]')?.value || ''
+                    }
+                });
+                const data = await response.json();
+                
+                const resultDiv = document.getElementById('result');
+                if (data.success) {
+                    resultDiv.className = 'result success';
+                    resultDiv.innerHTML = '<h3>✅ Succès!</h3><p>' + data.message + '</p><p>' + data.user_info + '</p>';
+                    setTimeout(() => window.location.href = data.redirect_url, 2000);
+                } else {
+                    resultDiv.className = 'result error';
+                    let html = '<h3>❌ Échec</h3><p>' + data.error + '</p>';
+                    if (data.user_info) html += '<p>' + data.user_info + '</p>';
+                    if (data.debug_info) {
+                        html += '<h4>Informations de debug:</h4><pre>' + JSON.stringify(data.debug_info, null, 2) + '</pre>';
+                    }
+                    if (data.users_list) {
+                        html += '<h4>Utilisateurs disponibles:</h4><ul>';
+                        data.users_list.forEach(user => html += '<li>' + user[0] + ' (' + user[1] + ')</li>');
+                        html += '</ul>';
+                    }
+                    resultDiv.innerHTML = html;
+                }
+            } catch (error) {
+                document.getElementById('result').innerHTML = '<div class="result error">Erreur: ' + error.message + '</div>';
+            }
+        });
+        </script>
+    </body>
+    </html>
+    """
+    return HttpResponse(html)
+
 urlpatterns = [
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
@@ -920,22 +1042,22 @@ urlpatterns = [
     path('load-fixtures/', load_fixtures, name='load_fixtures'),
     path('load-fixtures-safe/', load_fixtures_safe, name='load_fixtures_safe'),
     path('create-test-data/', create_test_data, name='create_test_data'),
+    path('check-static/', check_static_files, name='check_static'),
+    path('test-admin/', test_admin_access, name='test_admin'),
     path('create-admin/', create_admin_user, name='create_admin'),
     path('simple-admin/', simple_admin_test, name='simple_admin'),
     path('list-users/', list_users, name='list_users'),
     path('list-posts/', list_posts, name='list_posts'),
-    path('check-static/', check_static_files, name='check_static'),
-    path('test-admin/', test_admin_access, name='test_admin'),
-    path('test-redirect/', test_admin_redirect, name='test_redirect'),
-    path('test-login/', test_login_status, name='test_login'),
-    path('debug-login/', debug_login, name='debug_login'),
-    path('admin-alt/', admin_alternative, name='admin_alt'),
+    path('test-admin-redirect/', test_admin_redirect, name='test_admin_redirect'),
     path('admin-login/', admin_custom_login, name='admin_custom_login'),
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
-    # path('admin/', admin.site.urls),  # Désactivé temporairement
+    path('admin-alt/', admin_alternative, name='admin_alternative'),
+    path('test-login-status/', test_login_status, name='test_login_status'),
+    path('debug-login/', debug_login, name='debug_login'),
+    path('test-login-manual/', test_login_manual, name='test_login_manual'),
     path('', include('blog.urls')),
-    path('profile/', include('user_profile.urls')),
     path('', include('authentication.urls')),
+    path('', include('user_profile.urls')),
 ]
 
 if settings.DEBUG:
