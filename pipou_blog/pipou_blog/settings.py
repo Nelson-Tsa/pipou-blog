@@ -198,6 +198,11 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',  # Backend par défaut (fallback)
 ]
 
+# Configuration des redirections d'authentification
+LOGIN_REDIRECT_URL = '/'  # Redirection après connexion réussie
+LOGIN_URL = '/authentication/login/'  # URL de la page de connexion
+LOGOUT_REDIRECT_URL = '/authentication/login/'  # Redirection après déconnexion
+
 # Pour gérer les fichiers média (images)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
@@ -215,9 +220,9 @@ if not DEBUG:
     
     # SOLUTION POUR ADMIN DJANGO : Désactiver les redirections automatiques ADMIN seulement
     # Mais garder LOGIN_REDIRECT_URL pour que la connexion normale fonctionne
-    LOGIN_URL = '/login/'  # Garder pour la connexion normale
+    LOGIN_URL = '/authentication/login/'  # Garder pour la connexion normale
     LOGIN_REDIRECT_URL = '/'  # Rediriger vers l'accueil après connexion
-    LOGOUT_REDIRECT_URL = '/login/'  # Rediriger vers login après déconnexion
+    LOGOUT_REDIRECT_URL = '/authentication/login/'  # Rediriger vers login après déconnexion
     
     # Headers de sécurité - TOUS DÉSACTIVÉS pour tester
     SECURE_BROWSER_XSS_FILTER = False
@@ -241,6 +246,6 @@ if not DEBUG:
     APPEND_SLASH = False  # Désactiver l'ajout automatique de slash
 else:
     # Configuration pour le développement local
-    LOGIN_URL = '/login/'
+    LOGIN_URL = '/authentication/login/'
     LOGIN_REDIRECT_URL = '/'
-    LOGOUT_REDIRECT_URL = '/login/'
+    LOGOUT_REDIRECT_URL = '/authentication/login/'
