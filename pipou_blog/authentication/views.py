@@ -11,7 +11,7 @@ from django.contrib import messages
 from django.urls import reverse_lazy
 
 from . import forms
-
+from django.views.decorators.csrf import csrf_exempt
 
 class CustomLoginView(LoginView):
     template_name = 'authentication/login.html'
@@ -117,5 +117,48 @@ def test_post(request):
             <p>Password: <input type="password" name="password" required></p>
             <p><button type="submit">Tester POST</button></p>
         </form>
+        <p><a href="/login/">← Retour à la connexion</a></p>
+        """)
+
+@csrf_exempt
+def test_post_no_csrf(request):
+    """Test POST sans CSRF pour identifier le problème"""
+    if request.method == 'POST':
+        return HttpResponse(f"""
+        <h1>🎉 POST REÇU SANS CSRF !</h1>
+        <p><strong>Méthode:</strong> {request.method}</p>
+        <p><strong>Données POST:</strong> {dict(request.POST)}</p>
+        <p><strong>User-Agent:</strong> {request.META.get('HTTP_USER_AGENT', 'Non défini')}</p>
+        <hr>
+        <p>✅ Si vous voyez cette page, le problème est le CSRF !</p>
+        <p><a href="/login/">← Retour à la connexion</a></p>
+        """)
+    else:
+        return HttpResponse(f"""
+        <h1>🧪 TEST POST SANS CSRF</h1>
+        <p>Ce test contourne la protection CSRF pour identifier le problème.</p>
+        
+        <form method="POST" style="border: 2px solid red; padding: 20px; margin: 20px 0;">
+            <h3>🚨 FORMULAIRE SANS CSRF</h3>
+            <p>Email: <input type="email" name="email" value="test@test.com" required></p>
+            <p>Test: <input type="text" name="test" value="hello world" required></p>
+            <p><button type="submit" style="background: red; color: white; padding: 10px;">TESTER SANS CSRF</button></p>
+        </form>
+        
+        <form method="POST" style="border: 2px solid green; padding: 20px; margin: 20px 0;">
+            <h3>✅ FORMULAIRE AVEC CSRF</h3>
+            {% csrf_token %}
+            <p>Email: <input type="email" name="email" value="test@test.com" required></p>
+            <p>Test: <input type="text" name="test" value="hello world" required></p>
+            <p><button type="submit" style="background: green; color: white; padding: 10px;">TESTER AVEC CSRF</button></p>
+        </form>
+        
+        <p><strong>Instructions:</strong></p>
+        <ol>
+            <li>Testez d'abord le bouton ROUGE (sans CSRF)</li>
+            <li>Si ça marche → le problème est le CSRF</li>
+            <li>Si ça ne marche pas → le problème est plus profond</li>
+        </ol>
+        
         <p><a href="/login/">← Retour à la connexion</a></p>
         """)
