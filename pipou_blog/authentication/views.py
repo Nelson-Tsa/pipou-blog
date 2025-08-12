@@ -14,25 +14,57 @@ from . import forms
 from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
 
+# NOUVELLE VUE DE CONNEXION SIMPLE QUI FONCTIONNE
+def custom_login_view(request):
+    """Vue de connexion simple et fonctionnelle"""
+    if request.user.is_authenticated:
+        return redirect('/')
+    
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        
+        if email and password:
+            # Utiliser notre backend d'authentification par email
+            User = get_user_model()
+            try:
+                user = User.objects.get(email=email)
+                if user.check_password(password):
+                    if user.is_active:
+                        login(request, user)
+                        messages.success(request, f'Connexion réussie ! Bienvenue {user.username}')
+                        next_url = request.GET.get('next', '/')
+                        return redirect(next_url)
+                    else:
+                        messages.error(request, 'Votre compte est désactivé.')
+                else:
+                    messages.error(request, 'Mot de passe incorrect.')
+            except User.DoesNotExist:
+                messages.error(request, 'Aucun compte trouvé avec cet email.')
+        else:
+            messages.error(request, 'Veuillez remplir tous les champs.')
+    
+    return render(request, 'authentication/login.html', {
+        'form': forms.EmailAuthenticationForm()
+    })
+
+# ANCIENNE VUE - GARDÉE POUR RÉFÉRENCE MAIS NON UTILISÉE
 class CustomLoginView(LoginView):
     template_name = 'authentication/login.html'
-    authentication_form = EmailAuthenticationForm
+    form_class = forms.EmailAuthenticationForm
     redirect_authenticated_user = True
-    
+
     def get_success_url(self):
-        """Définir l'URL de redirection après connexion réussie"""
-        return getattr(settings, 'LOGIN_REDIRECT_URL', '/')
+        next_url = self.request.GET.get('next')
+        if next_url:
+            return next_url
+        return '/'
 
     def form_valid(self, form):
-        """Appelée quand le formulaire est valide"""
-        user = form.get_user()
-        login(self.request, user)
-        messages.success(self.request, f'Bienvenue {user.username} !')
-        return redirect(self.get_success_url())
+        messages.success(self.request, f'Connexion réussie ! Bienvenue {form.get_user().username}')
+        return super().form_valid(form)
 
     def form_invalid(self, form):
-        """Appelée quand le formulaire est invalide"""
-        # Ajouter un message d'erreur pour l'utilisateur
         messages.error(self.request, 'Erreur de connexion. Vérifiez vos identifiants.')
         return self.render_to_response(self.get_context_data(form=form))
 
