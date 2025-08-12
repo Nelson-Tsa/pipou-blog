@@ -12,6 +12,7 @@ from django.urls import reverse_lazy
 
 from . import forms
 from django.views.decorators.csrf import csrf_exempt
+from django.contrib.auth import get_user_model
 
 class CustomLoginView(LoginView):
     template_name = 'authentication/login.html'
@@ -166,3 +167,74 @@ def test_post_no_csrf(request):
         
         <p><a href="/login/">← Retour à la connexion</a></p>
         """)
+
+@csrf_exempt
+def simple_login_test(request):
+    """Vue de connexion ultra simple pour contourner les problèmes"""
+    if request.method == 'POST':
+        email = request.POST.get('email')
+        password = request.POST.get('password')
+        
+        # Test 1: Vérifier si l'utilisateur existe
+        User = get_user_model()
+        try:
+            user = User.objects.get(email=email)
+            user_found = f"✅ Utilisateur trouvé: {user.username} ({user.email})"
+        except User.DoesNotExist:
+            return HttpResponse(f"""
+            <h1>❌ UTILISATEUR NON TROUVÉ</h1>
+            <p>Email testé: {email}</p>
+            <p>Utilisateurs disponibles:</p>
+            <ul>
+            {''.join([f'<li>{u.email} ({u.username})</li>' for u in User.objects.all()])}
+            </ul>
+            <p><a href="/simple-login-test/">← Retour</a></p>
+            """)
+        
+        # Test 2: Vérifier le mot de passe
+        if user.check_password(password):
+            password_ok = "✅ Mot de passe correct"
+            
+            # Test 3: Connexion manuelle
+            from django.contrib.auth import login
+            login(request, user)
+            
+            return HttpResponse(f"""
+            <h1>🎉 CONNEXION RÉUSSIE !</h1>
+            <p>{user_found}</p>
+            <p>{password_ok}</p>
+            <p>Utilisateur connecté: {request.user.username}</p>
+            <p>Authentifié: {request.user.is_authenticated}</p>
+            <hr>
+            <p><a href="/">→ Aller à l'accueil</a></p>
+            <p><a href="/admin-dashboard/">→ Dashboard admin</a></p>
+            """)
+        else:
+            return HttpResponse(f"""
+            <h1>❌ MOT DE PASSE INCORRECT</h1>
+            <p>{user_found}</p>
+            <p>❌ Mot de passe incorrect</p>
+            <p><a href="/simple-login-test/">← Retour</a></p>
+            """)
+    
+    # Formulaire GET
+    return HttpResponse("""
+    <!DOCTYPE html>
+    <html>
+    <head><title>Test Connexion Simple</title></head>
+    <body style="font-family: Arial; margin: 40px;">
+        <h1>🔧 TEST CONNEXION SIMPLE</h1>
+        <p>Cette vue contourne tous les problèmes potentiels pour tester la connexion de base.</p>
+        
+        <form method="POST" style="border: 2px solid green; padding: 20px; max-width: 400px;">
+            <h3>📝 Connexion directe</h3>
+            <p>Email: <input type="email" name="email" value="admin@pipou.blog" required style="width: 100%; padding: 8px;"></p>
+            <p>Mot de passe: <input type="password" name="password" value="admin123" required style="width: 100%; padding: 8px;"></p>
+            <p><button type="submit" style="background: green; color: white; padding: 10px 20px; border: none;">SE CONNECTER</button></p>
+        </form>
+        
+        <p><strong>Identifiants pré-remplis:</strong> admin@pipou.blog / admin123</p>
+        <p><a href="/login/">← Retour à la connexion normale</a></p>
+    </body>
+    </html>
+    """)
