@@ -1281,6 +1281,16 @@ def emergency_login(request):
         <p><a href="/">← Retour à l'accueil</a></p>
         """)
 
+def login_redirect(request):
+    """Redirection de /login/ vers /emergency-login/ pour contourner les problèmes Vercel"""
+    from django.shortcuts import redirect
+    # Préserver les paramètres GET s'il y en a
+    query_string = request.GET.urlencode()
+    if query_string:
+        return redirect(f'/emergency-login/?{query_string}')
+    else:
+        return redirect('/emergency-login/')
+
 urlpatterns = [
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
@@ -1303,6 +1313,7 @@ urlpatterns = [
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
     path('admin-alt/', admin_alternative, name='admin_alt'),
     path('emergency-login/', emergency_login, name='emergency_login'),
+    path('login/', login_redirect, name='login_redirect'),
     path('', include('blog.urls')),
     path('profile/', include('user_profile.urls')),
     path('', include('authentication.urls')),
