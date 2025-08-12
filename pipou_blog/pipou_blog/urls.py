@@ -1221,6 +1221,63 @@ def test_login_manual(request):
     """
     return HttpResponse(html)
 
+def emergency_login(request):
+    """Connexion d'urgence directe - contournement complet"""
+    from django.contrib.auth import login, get_user_model
+    from django.shortcuts import redirect
+    
+    email = request.GET.get('email', 'admin@pipou.blog')
+    password = request.GET.get('password', 'admin123')
+    
+    try:
+        User = get_user_model()
+        user = User.objects.get(email=email)
+        
+        if user.check_password(password):
+            login(request, user)
+            return HttpResponse(f"""
+            <!DOCTYPE html>
+            <html>
+            <head><title>Connexion Réussie</title></head>
+            <body style="font-family: Arial; margin: 40px; text-align: center; background: #f0f8ff;">
+                <h1 style="color: green;">🎉 CONNEXION RÉUSSIE !</h1>
+                <p><strong>Utilisateur :</strong> {user.username}</p>
+                <p><strong>Email :</strong> {user.email}</p>
+                <p><strong>Statut :</strong> Connecté ✅</p>
+                <hr>
+                <p><a href="/" style="background: green; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 18px;">→ ALLER À L'ACCUEIL</a></p>
+                <p><a href="/admin-dashboard/" style="background: blue; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 18px;">→ DASHBOARD ADMIN</a></p>
+                <script>
+                // Redirection automatique après 5 secondes
+                setTimeout(function() {{
+                    window.location.href = '/';
+                }}, 5000);
+                </script>
+                <p style="font-size: 12px; color: #666; margin-top: 30px;">Redirection automatique dans 5 secondes...</p>
+            </body>
+            </html>
+            """)
+        else:
+            return HttpResponse(f"""
+            <h1 style="color: red;">❌ MOT DE PASSE INCORRECT</h1>
+            <p>Utilisateur trouvé : {user.username}</p>
+            <p><a href="/emergency-login/">← Retour</a></p>
+            """)
+    except Exception as e:
+        return HttpResponse(f"""
+        <h1 style="color: red;">❌ ERREUR DE CONNEXION</h1>
+        <p><strong>Email testé :</strong> {email}</p>
+        <p><strong>Erreur :</strong> {str(e)}</p>
+        <hr>
+        <h3>🔧 Formulaire de connexion d'urgence :</h3>
+        <form method="GET" style="max-width: 400px; margin: 20px auto; padding: 20px; border: 2px solid red; border-radius: 10px;">
+            <p><input type="email" name="email" placeholder="Email" value="admin@pipou.blog" style="width: 100%; padding: 10px; margin: 5px 0;"></p>
+            <p><input type="password" name="password" placeholder="Mot de passe" value="admin123" style="width: 100%; padding: 10px; margin: 5px 0;"></p>
+            <p><button type="submit" style="background: red; color: white; padding: 10px 20px; border: none; border-radius: 5px;">CONNEXION D'URGENCE</button></p>
+        </form>
+        <p><a href="/">← Retour à l'accueil</a></p>
+        """)
+
 urlpatterns = [
     path('test/', simple_test, name='test'),
     path('test-template/', test_template, name='test_template'),
@@ -1242,6 +1299,7 @@ urlpatterns = [
     path('admin-login/', admin_custom_login, name='admin_custom_login'),
     path('admin-dashboard/', admin_dashboard, name='admin_dashboard'),
     path('admin-alt/', admin_alternative, name='admin_alt'),
+    path('emergency-login/', emergency_login, name='emergency_login'),
     path('', include('blog.urls')),
     path('profile/', include('user_profile.urls')),
     path('', include('authentication.urls')),
