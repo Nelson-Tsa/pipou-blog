@@ -25,18 +25,12 @@
         <form method="POST" action="{% url 'login' %}" class="connexion-form">
             {% csrf_token %}
             <div class="connexion_input">
-                {{ form.email.label_tag }} 
-                {{ form.email }}
-                {% if form.email.errors %}
-                <div class="error">{{ form.email.errors }}</div>
-                {% endif %}
+                <label for="email">Email :</label>
+                <input type="email" name="email" id="email" placeholder="votre@email.com" required>
             </div>
             <div class="connexion_input">
-                {{ form.password.label_tag }} 
-                {{ form.password }}
-                {% if form.password.errors %}
-                <div class="error">{{ form.password.errors }}</div>
-                {% endif %}
+                <label for="password">Mot de passe :</label>
+                <input type="password" name="password" id="password" placeholder="Votre mot de passe" required>
             </div>
             <button type="submit" class="submit_btn">Se Connecter</button>
         </form>
