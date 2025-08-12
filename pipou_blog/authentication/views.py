@@ -32,6 +32,8 @@ def custom_login_view(request):
                 user = User.objects.get(email=email)
                 if user.check_password(password):
                     if user.is_active:
+                        # CORRECTION : Spécifier le backend d'authentification
+                        user.backend = 'authentication.backends.EmailBackend'
                         login(request, user)
                         messages.success(request, f'Connexion réussie ! Bienvenue {user.username}')
                         next_url = request.GET.get('next', '/')
