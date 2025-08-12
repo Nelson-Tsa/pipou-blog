@@ -22,7 +22,7 @@
             </div>
         {% endif %}
         
-        <form method="POST" class="connexion-form">
+        <form method="POST" action="{% url 'login' %}" class="connexion-form">
             {% csrf_token %}
             <div class="connexion_input">
                 {{ form.email.label_tag }} 
@@ -38,10 +38,18 @@
                 <div class="error">{{ form.password.errors }}</div>
                 {% endif %}
             </div>
-            <input type="submit" value="Se Connecter" class="submit_btn" />
+            <button type="submit" class="submit_btn">Se Connecter</button>
         </form>
 
         <p>Pas encore de compte ? <a class="link" href="{% url 'register' %}">S'inscrire</a></p>
+        
+        <!-- Test simple pour vérifier la soumission -->
+        <div style="margin-top: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px; font-size: 12px;">
+            <strong>🔧 Test de soumission :</strong>
+            <p>Si le formulaire ne fonctionne toujours pas, le problème est dans la vue Django.</p>
+            <p><strong>URL actuelle :</strong> {{ request.get_full_path }}</p>
+            <p><strong>Méthode :</strong> {{ request.method }}</p>
+        </div>
         
         <!-- Lien de debug temporaire (à supprimer en production) -->
         {% if user.is_superuser or debug %}

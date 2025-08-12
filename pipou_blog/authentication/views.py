@@ -92,35 +92,30 @@ def debug_login(request):
 
 
 def test_post(request):
-    """Test ultra simple pour vérifier que les POST arrivent"""
+    """Vue simple pour tester si les données POST arrivent au serveur"""
     if request.method == 'POST':
-        return HttpResponse(f"🎉 POST REÇU ! Données: {dict(request.POST)}")
-    
-    # Générer le token CSRF correctement
-    from django.middleware.csrf import get_token
-    csrf_token = get_token(request)
-    
-    return HttpResponse(f"""
-    <!DOCTYPE html>
-    <html>
-    <head>
-        <title>Test POST</title>
-        <style>
-            body {{ font-family: Arial, sans-serif; margin: 40px; }}
-            form {{ max-width: 400px; margin: 0 auto; }}
-            input, button {{ padding: 10px; margin: 10px 0; width: 100%; }}
-            button {{ background: #007cba; color: white; border: none; cursor: pointer; }}
-            .success {{ background: #d4edda; padding: 15px; border-radius: 5px; color: #155724; }}
-        </style>
-    </head>
-    <body>
-        <h1>🧪 Test POST Ultra Simple</h1>
+        email = request.POST.get('email', 'NON REÇU')
+        password = request.POST.get('password', 'NON REÇU')
+        
+        return HttpResponse(f"""
+        <h1>✅ DONNÉES POST REÇUES !</h1>
+        <p><strong>Email reçu:</strong> {email}</p>
+        <p><strong>Mot de passe reçu:</strong> {'***' if password != 'NON REÇU' else 'NON REÇU'}</p>
+        <p><strong>Toutes les données POST:</strong> {dict(request.POST)}</p>
+        <p><strong>Méthode:</strong> {request.method}</p>
+        <p><strong>URL:</strong> {request.get_full_path()}</p>
+        <hr>
+        <p>Si vous voyez cette page, le problème n'est PAS dans la soumission du formulaire !</p>
+        <p><a href="/login/">← Retour à la connexion</a></p>
+        """)
+    else:
+        return HttpResponse(f"""
+        <h1>🔍 TEST DE SOUMISSION</h1>
+        <p>Cette page teste si les données POST arrivent au serveur.</p>
         <form method="POST">
-            <input type="hidden" name="csrfmiddlewaretoken" value="{csrf_token}">
-            <input type="text" name="test" value="hello world" placeholder="Tapez quelque chose...">
-            <button type="submit">🚀 ENVOYER POST</button>
+            <p>Email: <input type="email" name="email" required></p>
+            <p>Password: <input type="password" name="password" required></p>
+            <p><button type="submit">Tester POST</button></p>
         </form>
-        <p><a href="/login/">← Retour au login</a></p>
-    </body>
-    </html>
-    """)
+        <p><a href="/login/">← Retour à la connexion</a></p>
+        """)
