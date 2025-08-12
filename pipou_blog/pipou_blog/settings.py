@@ -13,6 +13,11 @@ https://docs.djangoproject.com/en/5.2/ref/settings/
 import os
 from pathlib import Path
 from urllib.parse import urlparse, parse_qsl
+from dotenv import load_dotenv
+import dj_database_url
+
+# Charger les variables d'environnement
+load_dotenv()
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -22,12 +27,13 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.2/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-*l!46iy#n(eoz0pu(&+7p29)&$-ktztyzw&u4u64sc-fscd7lw'
+SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-*l!46iy#n(eoz0pu(&+7p29)&$-ktztyzw&u4u64sc-fscd7lw')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
-ALLOWED_HOSTS = []
+# Configuration pour Vercel
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -46,6 +52,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',  # Pour Vercel
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -76,22 +83,31 @@ TEMPLATES = [
 WSGI_APPLICATION = 'pipou_blog.wsgi.application'
 
 
-# Database
+# Database - Configuration Neon PostgreSQL
 # https://docs.djangoproject.com/en/5.2/ref/settings/#databases
 
-tmpPostgres = urlparse(os.getenv("DATABASE_URL"))
-
+# Utiliser dj-database-url pour une configuration flexible
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': tmpPostgres.path.replace('/', ''),
-        'USER': tmpPostgres.username,
-        'PASSWORD': tmpPostgres.password,
-        'HOST': tmpPostgres.hostname,
-        'PORT': 5432,
-        'OPTIONS': dict(parse_qsl(tmpPostgres.query)),
-    }
+    'default': dj_database_url.parse(
+        os.environ.get('DATABASE_URL', 'sqlite:///db.sqlite3')
+    )
 }
+
+# Fallback vers la configuration manuelle si nécessaire
+if not os.environ.get('DATABASE_URL'):
+    tmpPostgres = urlparse(os.getenv("DATABASE_URL", ""))
+    if tmpPostgres.hostname:
+        DATABASES = {
+            'default': {
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': tmpPostgres.path.replace('/', ''),
+                'USER': tmpPostgres.username,
+                'PASSWORD': tmpPostgres.password,
+                'HOST': tmpPostgres.hostname,
+                'PORT': 5432,
+                'OPTIONS': dict(parse_qsl(tmpPostgres.query)),
+            }
+        }
 
 
 # Password validation
@@ -125,33 +141,36 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Static files (CSS, JavaScript, Images)
+# Static files (CSS, JavaScript, Images) - Configuration Vercel
 # https://docs.djangoproject.com/en/5.2/howto/static-files/
 
 STATIC_URL = '/static/'
-import os
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
 ]
+
+# Configuration pour Vercel
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+# Configuration d'authentification personnalisée
 AUTH_USER_MODEL = 'authentication.User'
+
+# Backends d'authentification pour email (basé sur les mémoires)
+AUTHENTICATION_BACKENDS = [
+    'authentication.backends.EmailBackend',
+    'django.contrib.auth.backends.ModelBackend',
+]
+
+# URLs d'authentification (corrigées selon les mémoires)
+LOGIN_URL = '/login/'  # PAS /authentication/login/
+LOGOUT_REDIRECT_URL = '/login/'
 
 # Pour gérer les fichiers média (images)
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
-
-
-""" AUTHENTICATION_BACKENDS = [
-    'django.contrib.auth.backends.ModelBackend',
-] """
-
-AUTHENTICATION_BACKENDS = [
-    'authentication.backends.EmailBackend', 
-]
-
-LOGIN_REDIRECT_URL = 'index'
-LOGOUT_REDIRECT_URL = 'login'
