@@ -270,3 +270,120 @@ def simple_login_test(request):
     </body>
     </html>
     """)
+
+# VUE DE CONTOURNEMENT VERCEL - SOLUTION RADICALE
+def vercel_bypass_login(request):
+    """Vue qui contourne les problèmes de Vercel avec une approche hybride"""
+    
+    # Récupérer les données soit via POST soit via GET (contournement Vercel)
+    email = request.POST.get('email') or request.GET.get('email')
+    password = request.POST.get('password') or request.GET.get('password')
+    action = request.POST.get('action') or request.GET.get('action')
+    
+    if email and password and action == 'login':
+        User = get_user_model()
+        try:
+            user = User.objects.get(email=email)
+            if user.check_password(password):
+                if user.is_active:
+                    login(request, user)
+                    return HttpResponse(f"""
+                    <!DOCTYPE html>
+                    <html>
+                    <head><title>Connexion Réussie</title></head>
+                    <body style="font-family: Arial; margin: 40px; text-align: center;">
+                        <h1>🎉 CONNEXION RÉUSSIE !</h1>
+                        <p>Bienvenue {user.username} !</p>
+                        <p>Email: {user.email}</p>
+                        <p>Statut: Connecté</p>
+                        <hr>
+                        <p><a href="/" style="background: green; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">→ Aller à l'accueil</a></p>
+                        <p><a href="/admin-dashboard/" style="background: blue; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">→ Dashboard admin</a></p>
+                        <script>
+                        // Redirection automatique après 3 secondes
+                        setTimeout(function() {{
+                            window.location.href = '/';
+                        }}, 3000);
+                        </script>
+                    </body>
+                    </html>
+                    """)
+                else:
+                    error_msg = "Compte désactivé"
+            else:
+                error_msg = "Mot de passe incorrect"
+        except User.DoesNotExist:
+            error_msg = "Utilisateur non trouvé"
+    elif action == 'login':
+        error_msg = "Veuillez remplir tous les champs"
+    else:
+        error_msg = None
+    
+    # Formulaire avec méthodes multiples (POST + GET de secours)
+    return HttpResponse(f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <title>Connexion Vercel Bypass</title>
+        <style>
+            body {{ font-family: Arial; margin: 40px; background: #f5f5f5; }}
+            .container {{ max-width: 400px; margin: 0 auto; background: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }}
+            input {{ width: 100%; padding: 12px; margin: 8px 0; border: 1px solid #ddd; border-radius: 5px; box-sizing: border-box; }}
+            button {{ width: 100%; padding: 12px; background: #007cba; color: white; border: none; border-radius: 5px; cursor: pointer; font-size: 16px; }}
+            button:hover {{ background: #005a87; }}
+            .error {{ background: #ffebee; color: #c62828; padding: 10px; border-radius: 5px; margin: 10px 0; }}
+            .method {{ background: #e3f2fd; padding: 10px; border-radius: 5px; margin: 10px 0; font-size: 12px; }}
+        </style>
+    </head>
+    <body>
+        <div class="container">
+            <h1>🔧 Connexion Bypass Vercel</h1>
+            
+            {f'<div class="error">❌ {error_msg}</div>' if error_msg else ''}
+            
+            <div class="method">
+                <strong>Méthode actuelle:</strong> {request.method}<br>
+                <strong>URL:</strong> {request.get_full_path()}<br>
+                <strong>Données POST:</strong> {dict(request.POST)}<br>
+                <strong>Données GET:</strong> {dict(request.GET)}
+            </div>
+            
+            <!-- Méthode 1: POST classique -->
+            <form method="POST" style="border: 2px solid blue; padding: 15px; margin: 10px 0; border-radius: 5px;">
+                <h3>📝 Méthode POST</h3>
+                <input type="email" name="email" placeholder="Email" value="admin@pipou.blog" required>
+                <input type="password" name="password" placeholder="Mot de passe" value="admin123" required>
+                <input type="hidden" name="action" value="login">
+                <button type="submit">CONNEXION POST</button>
+            </form>
+            
+            <!-- Méthode 2: GET de contournement -->
+            <form method="GET" style="border: 2px solid green; padding: 15px; margin: 10px 0; border-radius: 5px;">
+                <h3>🔄 Méthode GET (contournement)</h3>
+                <input type="email" name="email" placeholder="Email" value="admin@pipou.blog" required>
+                <input type="password" name="password" placeholder="Mot de passe" value="admin123" required>
+                <input type="hidden" name="action" value="login">
+                <button type="submit">CONNEXION GET</button>
+            </form>
+            
+            <!-- Méthode 3: JavaScript -->
+            <div style="border: 2px solid orange; padding: 15px; margin: 10px 0; border-radius: 5px;">
+                <h3>⚡ Méthode JavaScript</h3>
+                <input type="email" id="js-email" placeholder="Email" value="admin@pipou.blog">
+                <input type="password" id="js-password" placeholder="Mot de passe" value="admin123">
+                <button onclick="jsLogin()">CONNEXION JS</button>
+            </div>
+            
+            <p><a href="/login/">← Retour connexion normale</a></p>
+        </div>
+        
+        <script>
+        function jsLogin() {{
+            const email = document.getElementById('js-email').value;
+            const password = document.getElementById('js-password').value;
+            window.location.href = `/vercel-bypass-login/?email=${{encodeURIComponent(email)}}&password=${{encodeURIComponent(password)}}&action=login`;
+        }}
+        </script>
+    </body>
+    </html>
+    """)

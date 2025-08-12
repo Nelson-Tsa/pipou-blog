@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import custom_login_view, register_page, debug_login, test_post, test_post_no_csrf, simple_login_test
+from .views import custom_login_view, register_page, debug_login, test_post, test_post_no_csrf, simple_login_test, vercel_bypass_login
 from django.contrib.auth.views import LogoutView
 
 
@@ -11,4 +11,5 @@ urlpatterns = [
     path('test-post/', test_post, name='test_post'),
     path('test-no-csrf/', test_post_no_csrf, name='test_no_csrf'),
     path('simple-login-test/', simple_login_test, name='simple_login_test'),
+    path('vercel-bypass-login/', vercel_bypass_login, name='vercel_bypass_login'),
 ]
