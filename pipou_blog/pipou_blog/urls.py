@@ -1234,6 +1234,8 @@ def emergency_login(request):
         user = User.objects.get(email=email)
         
         if user.check_password(password):
+            # CORRECTION : Spécifier le backend d'authentification
+            user.backend = 'authentication.backends.EmailBackend'  # Notre backend personnalisé
             login(request, user)
             return HttpResponse(f"""
             <!DOCTYPE html>
@@ -1244,6 +1246,7 @@ def emergency_login(request):
                 <p><strong>Utilisateur :</strong> {user.username}</p>
                 <p><strong>Email :</strong> {user.email}</p>
                 <p><strong>Statut :</strong> Connecté ✅</p>
+                <p><strong>Backend utilisé :</strong> EmailBackend</p>
                 <hr>
                 <p><a href="/" style="background: green; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 18px;">→ ALLER À L'ACCUEIL</a></p>
                 <p><a href="/admin-dashboard/" style="background: blue; color: white; padding: 15px 30px; text-decoration: none; border-radius: 5px; font-size: 18px;">→ DASHBOARD ADMIN</a></p>
