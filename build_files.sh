@@ -15,16 +15,16 @@ export DEBUG=False
 
 # Use a dummy DATABASE_URL if not set (for collectstatic only)
 if [ -z "$DATABASE_URL" ]; then
-    export DATABASE_URL="postgresql://dummy:dummy@dummy:5432/dummy"
+    export DATABASE_URL="sqlite:///dummy.db"
 fi
 
 # Collect static files
 echo "Collecting static files..."
 python3 manage.py collectstatic --noinput --clear
 
-# Create staticfiles_build directory structure for Vercel
-echo "Creating staticfiles_build structure..."
-mkdir -p staticfiles_build
-cp -r staticfiles/* staticfiles_build/
+# Move staticfiles to root for Vercel
+echo "Moving static files to root..."
+cd ..
+cp -r pipou_blog/staticfiles ./staticfiles
 
 echo "Build completed successfully!"
