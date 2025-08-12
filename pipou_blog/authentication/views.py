@@ -134,6 +134,10 @@ def test_post_no_csrf(request):
         <p><a href="/login/">← Retour à la connexion</a></p>
         """)
     else:
+        # Générer le token CSRF manuellement
+        from django.middleware.csrf import get_token
+        csrf_token = get_token(request)
+        
         return HttpResponse(f"""
         <h1>🧪 TEST POST SANS CSRF</h1>
         <p>Ce test contourne la protection CSRF pour identifier le problème.</p>
@@ -147,7 +151,7 @@ def test_post_no_csrf(request):
         
         <form method="POST" style="border: 2px solid green; padding: 20px; margin: 20px 0;">
             <h3>✅ FORMULAIRE AVEC CSRF</h3>
-            {% csrf_token %}
+            <input type="hidden" name="csrfmiddlewaretoken" value="{csrf_token}">
             <p>Email: <input type="email" name="email" value="test@test.com" required></p>
             <p>Test: <input type="text" name="test" value="hello world" required></p>
             <p><button type="submit" style="background: green; color: white; padding: 10px;">TESTER AVEC CSRF</button></p>
