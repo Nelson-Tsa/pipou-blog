@@ -3,10 +3,12 @@ from .forms import EmailAuthenticationForm
 from django.conf import settings
 from django.contrib.auth import login
 from django.shortcuts import redirect, render
-from django.http import HttpResponse, JsonResponse # Import HttpResponse
+from django.http import HttpResponse, JsonResponse
 from django.contrib.auth import authenticate
 from django.contrib.auth.models import User
 from django.template.loader import render_to_string
+from django.contrib import messages
+from django.urls import reverse_lazy
 
 from . import forms
 
@@ -14,15 +16,23 @@ from . import forms
 class CustomLoginView(LoginView):
     template_name = 'authentication/login.html'
     authentication_form = EmailAuthenticationForm
+    redirect_authenticated_user = True
+    
+    def get_success_url(self):
+        """Définir l'URL de redirection après connexion réussie"""
+        return getattr(settings, 'LOGIN_REDIRECT_URL', '/')
 
     def form_valid(self, form):
         """Appelée quand le formulaire est valide"""
-        login(self.request, form.get_user())
-        return redirect(settings.LOGIN_REDIRECT_URL or '/')
+        user = form.get_user()
+        login(self.request, user)
+        messages.success(self.request, f'Bienvenue {user.username} !')
+        return redirect(self.get_success_url())
 
     def form_invalid(self, form):
         """Appelée quand le formulaire est invalide"""
-        # Retourner le template avec les erreurs au lieu d'un HttpResponse brut
+        # Ajouter un message d'erreur pour l'utilisateur
+        messages.error(self.request, 'Erreur de connexion. Vérifiez vos identifiants.')
         return self.render_to_response(self.get_context_data(form=form))
 
 def register_page(request):

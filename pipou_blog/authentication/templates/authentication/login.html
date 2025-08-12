@@ -5,16 +5,14 @@
     <section class="connexion-container">
         <h1>Se connecter</h1>
         
-        <!-- Debug info -->
-        <div style="background: #f0f0f0; padding: 10px; margin: 10px 0; border-radius: 5px; font-size: 12px;">
-            <strong>🔍 Debug Info:</strong><br>
-            Request method: {{ request.method }}<br>
-            Form errors: {{ form.errors }}<br>
-            Form non-field errors: {{ form.non_field_errors }}<br>
-            User authenticated: {{ user.is_authenticated }}<br>
-            <a href="{% url 'debug_login' %}" style="color: blue;">→ Debug avancé</a> | 
-            <a href="/test-post/" style="color: green;">→ Test POST</a>
-        </div>
+        <!-- Messages d'erreur et de succès -->
+        {% if messages %}
+            {% for message in messages %}
+                <div class="alert alert-{{ message.tags }}">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endif %}
         
         {% if form.non_field_errors %}
             <div class="error non-field-errors">
@@ -23,16 +21,19 @@
             {% endfor %}
             </div>
         {% endif %}
+        
         <form method="POST" class="connexion-form">
             {% csrf_token %}
             <div class="connexion_input">
-                {{ form.email.label}} {{ form.email }}
+                {{ form.email.label_tag }} 
+                {{ form.email }}
                 {% if form.email.errors %}
                 <div class="error">{{ form.email.errors }}</div>
                 {% endif %}
             </div>
             <div class="connexion_input">
-                {{ form.password.label }} {{ form.password }}
+                {{ form.password.label_tag }} 
+                {{ form.password }}
                 {% if form.password.errors %}
                 <div class="error">{{ form.password.errors }}</div>
                 {% endif %}
@@ -41,7 +42,16 @@
         </form>
 
         <p>Pas encore de compte ? <a class="link" href="{% url 'register' %}">S'inscrire</a></p>
+        
+        <!-- Lien de debug temporaire (à supprimer en production) -->
+        {% if user.is_superuser or debug %}
+        <div style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-size: 12px;">
+            <strong>🔧 Debug (admin uniquement):</strong>
+            <a href="{% url 'debug_login' %}" style="color: blue;">Debug avancé</a> | 
+            <a href="/test-login-manual/" style="color: green;">Test connexion</a> |
+            <a href="/show-emails/" style="color: orange;">Voir emails</a>
+        </div>
+        {% endif %}
     </section>
-
 
 {% endblock %}

@@ -198,10 +198,17 @@ AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',  # Backend par défaut (fallback)
 ]
 
-# Configuration des redirections d'authentification
-LOGIN_REDIRECT_URL = '/'  # Redirection après connexion réussie
-LOGIN_URL = '/login/'  # URL de la page de connexion (correct car auth URLs sans préfixe)
-LOGOUT_REDIRECT_URL = '/login/'  # Redirection après déconnexion
+# Configuration des URLs de connexion et redirection
+LOGIN_URL = '/login/'
+LOGIN_REDIRECT_URL = '/'
+LOGOUT_REDIRECT_URL = '/login/'
+
+# Configuration des sessions et cookies pour la production
+if not DEBUG:
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_SSL_REDIRECT = False  # Vercel gère déjà HTTPS
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
 
 # Pour gérer les fichiers média (images)
 MEDIA_URL = '/media/'
@@ -210,20 +217,11 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # Configuration pour Vercel - éviter les redirections infinies
 if not DEBUG:
     # Configuration pour HTTPS sur Vercel
-    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
-    SECURE_SSL_REDIRECT = False  # Vercel gère déjà HTTPS
-    USE_TZ = True
-    
-    # Configuration pour les sessions et cookies - RÉACTIVÉE
-    SESSION_COOKIE_SECURE = True  # Nécessaire pour HTTPS
-    CSRF_COOKIE_SECURE = True     # Nécessaire pour HTTPS
+    USE_X_FORWARDED_HOST = True
+    USE_X_FORWARDED_PORT = True
     
     # Configuration des domaines autorisés
     ALLOWED_HOSTS = ['*']
-    
-    # Configuration pour éviter les problèmes de reverse proxy
-    USE_X_FORWARDED_HOST = True
-    USE_X_FORWARDED_PORT = True
     
 else:
     # Configuration pour le développement local
