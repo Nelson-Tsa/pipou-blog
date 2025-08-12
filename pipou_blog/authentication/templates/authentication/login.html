@@ -14,14 +14,7 @@
             {% endfor %}
         {% endif %}
         
-        {% if form.non_field_errors %}
-            <div class="error non-field-errors">
-            {% for error in form.non_field_errors %}
-            <p>{{ error }}</p>
-            {% endfor %}
-            </div>
-        {% endif %}
-        
+        <!-- Formulaire POST principal -->
         <form method="POST" action="{% url 'login' %}" class="connexion-form">
             {% csrf_token %}
             <div class="connexion_input">
@@ -35,25 +28,42 @@
             <button type="submit" class="submit_btn">Se Connecter</button>
         </form>
 
+        <!-- CONTOURNEMENT VERCEL : Formulaire GET -->
+        <div style="margin-top: 20px; padding: 15px; background: #fff3e0; border-radius: 5px; border: 2px solid orange;">
+            <h3> Contournement Vercel (si POST ne marche pas)</h3>
+            <form method="GET" action="{% url 'login' %}" style="margin: 10px 0;">
+                <div class="connexion_input">
+                    <label for="email-get">Email :</label>
+                    <input type="email" name="email" id="email-get" placeholder="votre@email.com" value="admin@pipou.blog" required>
+                </div>
+                <div class="connexion_input">
+                    <label for="password-get">Mot de passe :</label>
+                    <input type="password" name="password" id="password-get" placeholder="Votre mot de passe" value="admin123" required>
+                </div>
+                <button type="submit" style="background: orange; color: white; padding: 10px 20px; border: none; border-radius: 5px;">Connexion GET</button>
+            </form>
+            <p style="font-size: 12px; color: #666;">Cette méthode contourne les problèmes POST de Vercel</p>
+        </div>
+
         <p>Pas encore de compte ? <a class="link" href="{% url 'register' %}">S'inscrire</a></p>
         
         <!-- Test simple pour vérifier la soumission -->
         <div style="margin-top: 20px; padding: 10px; background: #e3f2fd; border-radius: 5px; font-size: 12px;">
-            <strong>🔧 Test de soumission :</strong>
+            <strong> Test de soumission :</strong>
             <p>Si le formulaire ne fonctionne toujours pas, le problème est dans la vue Django.</p>
             <p><strong>URL actuelle :</strong> {{ request.get_full_path }}</p>
             <p><strong>Méthode :</strong> {{ request.method }}</p>
         </div>
         
-        <!-- Lien de debug temporaire (à supprimer en production) -->
-        {% if user.is_superuser or debug %}
-        <div style="margin-top: 20px; padding: 10px; background: #f8f9fa; border-radius: 5px; font-size: 12px;">
-            <strong>🔧 Debug (admin uniquement):</strong>
-            <a href="{% url 'debug_login' %}" style="color: blue;">Debug avancé</a> | 
-            <a href="/test-login-manual/" style="color: green;">Test connexion</a> |
-            <a href="/show-emails/" style="color: orange;">Voir emails</a>
+        {% if user.is_superuser %}
+        <div style="margin-top: 10px; padding: 10px; background: #fff3e0; border-radius: 5px; font-size: 12px;">
+            <strong> Debug (superuser uniquement) :</strong>
+            <p><a href="{% url 'debug_login' %}">→ Debug avancé</a></p>
+            <p><a href="{% url 'test_post' %}">→ Test POST simple</a></p>
+            <p><a href="{% url 'simple_login_test' %}">→ Test connexion ultra simple</a></p>
         </div>
         {% endif %}
+
     </section>
 
 {% endblock %}

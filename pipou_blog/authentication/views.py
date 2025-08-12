@@ -16,13 +16,14 @@ from django.contrib.auth import get_user_model
 
 # NOUVELLE VUE DE CONNEXION SIMPLE QUI FONCTIONNE
 def custom_login_view(request):
-    """Vue de connexion simple et fonctionnelle"""
+    """Vue de connexion simple et fonctionnelle - AVEC SUPPORT GET POUR VERCEL"""
     if request.user.is_authenticated:
         return redirect('/')
     
-    if request.method == 'POST':
-        email = request.POST.get('email')
-        password = request.POST.get('password')
+    # SUPPORT GET ET POST (contournement Vercel)
+    if request.method == 'POST' or request.method == 'GET':
+        email = request.POST.get('email') or request.GET.get('email')
+        password = request.POST.get('password') or request.GET.get('password')
         
         if email and password:
             # Utiliser notre backend d'authentification par email
@@ -41,7 +42,7 @@ def custom_login_view(request):
                     messages.error(request, 'Mot de passe incorrect.')
             except User.DoesNotExist:
                 messages.error(request, 'Aucun compte trouvé avec cet email.')
-        else:
+        elif request.GET.get('email') or request.POST.get('email'):  # Si tentative de connexion
             messages.error(request, 'Veuillez remplir tous les champs.')
     
     return render(request, 'authentication/login.html', {
@@ -238,8 +239,14 @@ def simple_login_test(request):
             <p>Utilisateur connecté: {request.user.username}</p>
             <p>Authentifié: {request.user.is_authenticated}</p>
             <hr>
-            <p><a href="/">→ Aller à l'accueil</a></p>
-            <p><a href="/admin-dashboard/">→ Dashboard admin</a></p>
+            <p><a href="/" style="background: green; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">→ Aller à l'accueil</a></p>
+            <p><a href="/admin-dashboard/" style="background: blue; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px;">→ Dashboard admin</a></p>
+            <script>
+            // Redirection automatique après 3 secondes
+            setTimeout(function() {{
+                window.location.href = '/';
+            }}, 3000);
+            </script>
             """)
         else:
             return HttpResponse(f"""
