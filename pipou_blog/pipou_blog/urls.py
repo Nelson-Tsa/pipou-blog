@@ -597,14 +597,22 @@ def admin_custom_login(request):
 def admin_dashboard(request):
     """Dashboard admin personnalisé qui remplace l'admin Django"""
     from django.contrib.auth.decorators import user_passes_test
+    from django.contrib.auth import get_user_model
     
     # Vérifier que l'utilisateur est connecté et est staff
     if not request.user.is_authenticated or not request.user.is_staff:
         return redirect('/admin-login/')
     
     try:
+        # CORRECTION : Import des modèles nécessaires
+        User = get_user_model()
+        try:
+            from blog.models import Post
+            posts_count = Post.objects.count()
+        except ImportError:
+            posts_count = 0  # Si le modèle Post n'existe pas encore
+        
         users_count = User.objects.count()
-        posts_count = Post.objects.count()
         superusers_count = User.objects.filter(is_superuser=True).count()
         
         # Interface d'administration complète
